@@ -9,8 +9,6 @@ use Illuminate\Http\Request;
 
 
 
-
-
 Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
 
     Route::post('/login', [AuthController::class, 'login'])->name('login');

@@ -23,10 +23,14 @@ class UpdateRequest extends FormRequest
      */
     public function rules()
     {
+        $userId = $this->route('user'); // Route model binding bo'lmasa, $this->route('user') = id
+
         return [
-            'fullname' => 'required',
-            'username' => 'required|unique:users,login,' . $this->route('user')->id,
-            'password' => 'required|confirmed',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email,' . $userId,
+            'password' => 'nullable|string|min:6', // parol har safar shart emas
+            'phone'    => 'nullable|string|max:255',
+            'role'     => 'required|in:superadmin,admin,seller,buyer',
         ];
     }
 }

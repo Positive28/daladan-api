@@ -14,7 +14,11 @@ class UserService extends BaseService
     public function __construct(UserRepository $repo)
     {
         $this->repo = $repo;
-        $this->filter_fields = ['name' => ['type' => 'string'], 'username' => ['type' => 'string'], 'status' => ['type' => 'number']];
+        $this->filter_fields = [
+            'name'  => ['type' => 'string'], 
+            'email' => ['type' => 'string'], 
+            'role'  => ['type' => 'string']
+        ];
         $this->relation = [];
     }
 
