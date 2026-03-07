@@ -22,22 +22,25 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh
-          KEY_FILE=~/.ssh/deploy_key_clean
+          KEY_FILE=~/.ssh/deploy_key
 
-          # Supports:
-          # 1) multi-line private key in secret
-          # 2) one-line key with literal \n escapes
-          # 3) base64-encoded private key
+          # Supports: raw key (multi-line) or base64-encoded
           if printf '%s' "${VPS_SSH_KEY}" | grep -q "BEGIN .*PRIVATE KEY"; then
-            printf '%b' "${VPS_SSH_KEY}" | tr -d '\r' > "${KEY_FILE}"
+            printf '%s' "${VPS_SSH_KEY}" | tr -d '\r' > "${KEY_FILE}"
           else
-            printf '%s' "${VPS_SSH_KEY}" | tr -d '\r' | base64 -d > "${KEY_FILE}"
+            printf '%s' "${VPS_SSH_KEY}" | tr -d '\r\n ' | base64 -d > "${KEY_FILE}"
           fi
 
           chmod 600 "${KEY_FILE}"
-          ssh-keygen -y -f "${KEY_FILE}" >/dev/null
+          ssh-keygen -y -f "${KEY_FILE}" >/dev/null || { echo "Key validation failed"; exit 1; }
+          echo "Key fingerprint: $(ssh-keygen -lf ${KEY_FILE})"
+
           eval "$(ssh-agent -s)"
           ssh-add "${KEY_FILE}"
+
+          # Persist agent for next steps (critical!)
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
 
       - name: Add server to known hosts
         env:
@@ -61,5 +64,5 @@ jobs:
           PORT="${VPS_PORT:-22}"
           APP_DIR="${VPS_APP_DIR:-/var/www/start-api}"
 
-          ssh -p "${PORT}" "${VPS_USER}@${VPS_HOST}" \
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -p "${PORT}" "${VPS_USER}@${VPS_HOST}" \
             "APP_DIR='${APP_DIR}' bash '${APP_DIR}/scripts/deploy-tag.sh' '${TAG}'"
