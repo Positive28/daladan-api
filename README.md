@@ -125,9 +125,13 @@ sudo chmod -R 775 /var/www/start-api/storage /var/www/start-api/bootstrap/cache
 Configure Nginx to serve the Laravel app:
 
 ```bash
-# Replace default site with Laravel config
+# 1. Copy config to sites-available (required before symlink)
 sudo cp /var/www/start-api/deploy/nginx-start-api.conf /etc/nginx/sites-available/start-api
+
+# 2. Enable it as default site
 sudo ln -sf /etc/nginx/sites-available/start-api /etc/nginx/sites-enabled/default
+
+# 3. Test and reload
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
