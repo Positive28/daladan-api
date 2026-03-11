@@ -6,24 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-/**
- * Barcha user CRUD logikasi (filter, sort, validatsiya) shu controllerda.
- * Eski yondashuv saqlanib qolgan (ishlatilmaydi, faqat arxiv):
- *   - App\Services\UserService, App\Services\BaseService
- *   - App\Repositories\UserRepository, App\Repositories\BaseRepository
- *   - App\Http\Requests\User\IndexRequest, StoreRequest, UpdateRequest
- */
+
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request)
     {
         $validated = $request->validate([
             'sort_key'  => 'nullable|string',
             'sort_type' => 'required_with:sort_key|in:asc,desc',
             'name'      => 'nullable|string',
+            'phone'     => 'nullable|string',
             'email'     => 'nullable|string',
             'role'      => 'nullable|string|in:user,admin',
             'page'      => 'nullable|integer|min:1',
@@ -35,6 +28,9 @@ class UserController extends Controller
 
         if (!empty($validated['name'])) {
             $query->where('name', 'like', '%' . $validated['name'] . '%');
+        }
+        if (!empty($validated['phone'])) {
+            $query->where('phone', 'like', '%' . $validated['phone'] . '%');
         }
         if (!empty($validated['email'])) {
             $query->where('email', 'like', '%' . $validated['email'] . '%');
@@ -56,27 +52,27 @@ class UserController extends Controller
         return response()->successJson($lists);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
-            'phone'    => 'nullable|string|max:255',
-            'role'     => 'required|in:user,admin',
+            'phone'     => 'required|string|max:20|unique:users,phone',
+            'password'  => 'required|string|min:6',
+            'name'      => 'required|string|max:255',
+            'email'     => 'nullable|email|unique:users,email',
+            'telegram'  => 'nullable|string|max:80',
+            'region_id' => 'nullable|integer|exists:regions,id',
+            'city_id'   => 'nullable|integer|exists:cities,id',
+            'role'      => 'nullable|in:user,admin',
         ]);
 
+        $validated['role'] = $validated['role'] ?? User::ROLE_USER;
         $user = User::create($validated);
 
         return response()->successJson($user);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id)
     {
         $user = User::find((int) $id);
@@ -88,9 +84,7 @@ class UserController extends Controller
         return response()->successJson($user);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, string $id)
     {
         $userId = (int) $id;
@@ -101,25 +95,33 @@ class UserController extends Controller
         }
 
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email,' . $userId,
-            'password' => 'nullable|string|min:6',
-            'phone'    => 'nullable|string|max:255',
-            'role'     => 'required|in:user,admin',
+            'name'      => 'required|string|max:255',
+            'phone'     => 'required|string|max:20|unique:users,phone,' . $userId,
+            'email'     => 'nullable|email|unique:users,email,' . $userId,
+            'password'  => 'nullable|string|min:6',
+            'telegram'  => 'nullable|string|max:80',
+            'region_id' => 'nullable|integer|exists:regions,id',
+            'city_id'   => 'nullable|integer|exists:cities,id',
+            'role'      => 'required|in:user,admin',
+            'avatar'    => 'nullable|image|mimes:jpeg,png,webp|max:2048',
         ]);
 
         if (empty($validated['password'])) {
             unset($validated['password']);
         }
+        unset($validated['avatar']);
 
         $user->update($validated);
+
+        if ($request->hasFile('avatar')) {
+            $user->clearMediaCollection('avatar');
+            $user->addMedia($request->file('avatar'))->toMediaCollection('avatar');
+        }
 
         return response()->successJson($user->fresh());
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id)
     {
         $user = User::find((int) $id);

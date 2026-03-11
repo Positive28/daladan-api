@@ -6,15 +6,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject, HasMedia
 {
     public const ROLE_USER = 'user';
     public const ROLE_ADMIN = 'admin';
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, InteractsWithMedia;
 
     /**
      * The attributes that are mass assignable.
@@ -24,6 +26,9 @@ class User extends Authenticatable implements JWTSubject
     protected $fillable = [
         'name',
         'phone',
+        'telegram',
+        'region_id',
+        'city_id',
         'role',
         'email',
         'password',
@@ -66,4 +71,23 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Ad::class, 'seller_id');
     }
+
+    public function favorites()
+    {
+        return $this->belongsToMany(Ad::class, 'favorites')->withTimestamps();
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatar')->singleFile();
+    }
+
+    /** API uchun: profil rasmi to'liq URL */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        $url = $this->getFirstMediaUrl('avatar');
+        return $url ? url($url) : null;
+    }
+
+    protected $appends = ['avatar_url'];
 }

@@ -13,23 +13,28 @@ return new class extends Migration
     {
         Schema::create('ads', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('seller_id')
-                  ->constrained('users')
-                  ->cascadeOnDelete();
-
-            $table->foreignId('category_id')
-                  ->constrained('categories')
-                  ->restrictOnDelete();
-
-            $table->foreignId('subcategory_id')
-                  ->constrained('subcategories')
-                  ->restrictOnDelete();
-
+            $table->foreignId('seller_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('category_id')->constrained('categories')->restrictOnDelete();
+            $table->foreignId('subcategory_id')->constrained('subcategories')->restrictOnDelete();
+            $table->foreignId('region_id')->nullable()->constrained('regions')->nullOnDelete();
+            $table->foreignId('city_id')->nullable()->constrained('cities')->nullOnDelete();
+            
+            $table->string('district', 100)->nullable();
             $table->string('title', 150);
+            $table->text('description')->nullable();
             $table->decimal('price', 12, 2);
             $table->decimal('quantity', 10, 2);
-            $table->string('unit', 30); // enum/varchar → oddiy string
-            $table->enum('status', ['active', 'sold', 'deleted']);
+            $table->string('quantity_description', 50)->nullable();
+            $table->string('unit', 30);
+            $table->string('delivery_info', 255)->nullable();
+
+            $table->string('status', 20)->default('active');
+            $table->boolean('is_top_sale')->default(false);
+            $table->boolean('is_boosted')->default(false);
+            $table->timestamp('boost_expires_at')->nullable();
+            $table->unsignedInteger('views_count')->default(0);
+            $table->timestamp('expires_at')->nullable();
+
             $table->timestamps();
         });
     }

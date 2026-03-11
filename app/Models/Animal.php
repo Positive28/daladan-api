@@ -4,10 +4,12 @@ namespace App\Models;
 
 use App\Models\Concerns\HasAdDetail;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Animal extends Model
 {
-    use HasAdDetail;
+    use HasAdDetail, InteractsWithMedia;
 
     protected $primaryKey = 'id';
 
@@ -31,5 +33,10 @@ class Animal extends Model
             'milk_per_day_l' => 'decimal:1',
             'is_pregnant'    => 'boolean',
         ];
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('photos')->acceptsMimeTypes(['image/jpeg', 'image/png'])->withResponsiveImages();
     }
 }
