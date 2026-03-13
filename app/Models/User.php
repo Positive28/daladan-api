@@ -77,6 +77,16 @@ class User extends Authenticatable implements JWTSubject, HasMedia
         return $this->belongsToMany(Ad::class, 'favorites')->withTimestamps();
     }
 
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('avatar')->singleFile();

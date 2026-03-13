@@ -24,7 +24,7 @@ class UserController extends Controller
         ]);
 
         $perPage = $validated['per_page'] ?? 20;
-        $query   = User::query();
+        $query   = User::with(['region', 'city']);
 
         if (!empty($validated['name'])) {
             $query->where('name', 'like', '%' . $validated['name'] . '%');
@@ -75,7 +75,7 @@ class UserController extends Controller
     
     public function show(string $id)
     {
-        $user = User::find((int) $id);
+        $user = User::with(['region', 'city'])->find((int) $id);
 
         if (!$user) {
             return response()->errorJson('Object not found', 404);

@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
         $city = null;
         if ($region) {
             $city = City::where('region_id', $region->id)
-                ->where('slug', 'buxoro') // masalan: Buxoro tumani
+                ->where('slug', 'qorovulbozor') // masalan: Buxoro tumani
                 ->first();
         }
 
