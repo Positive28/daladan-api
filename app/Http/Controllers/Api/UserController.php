@@ -100,8 +100,8 @@ class UserController extends Controller
             'email'     => 'nullable|email|unique:users,email,' . $userId,
             'password'  => 'nullable|string|min:6',
             'telegram'  => 'nullable|string|max:80',
-            'region_id' => 'nullable|integer|exists:regions,id',
-            'city_id'   => 'nullable|integer|exists:cities,id',
+            'region_id' => 'required|integer|exists:regions,id',
+            'city_id'   => 'required|integer|exists:cities,id',
             'role'      => 'required|in:user,admin',
             'avatar'    => 'nullable|image|mimes:jpeg,png,webp|max:2048',
         ]);

@@ -18,6 +18,8 @@ class AuthController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'nullable|email|unique:users,email',
             'telegram' => 'nullable|string|max:80',
+            'region_id' => 'required|integer|exists:regions,id',
+            'city_id'   => 'required|integer|exists:cities,id',
         ]);
 
         $validated['role'] = User::ROLE_USER;
