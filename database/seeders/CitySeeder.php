@@ -10,40 +10,241 @@ class CitySeeder extends Seeder
 {
     public function run(): void
     {
-        // Buxoro viloyatini slug bo'yicha topamiz
-        $region = Region::where('slug', 'buxoro')->first();
-
-        if (! $region) {
-            // Agar avval RegionSeeder ishlamagan bo'lsa, hech narsa qilmaymiz
-            return;
-        }
-
-        $cities = [
-            ['name_uz' => 'Buxoro tumani',      'slug' => 'buxoro',        'sort_order' => 1],
-            ['name_uz' => 'Vobkent tumani',     'slug' => 'vobkent',       'sort_order' => 2],
-            ['name_uz' => 'Jondor tumani',      'slug' => 'jondor',        'sort_order' => 3],
-            ['name_uz' => 'Kogon tumani',       'slug' => 'kogon',         'sort_order' => 4],
-            ['name_uz' => 'Olot tumani',        'slug' => 'olot',          'sort_order' => 5],
-            ['name_uz' => 'Peshkoʻ tumani',     'slug' => 'peshku',        'sort_order' => 6],
-            ['name_uz' => 'Romitan tumani',     'slug' => 'romitan',       'sort_order' => 7],
-            ['name_uz' => 'Shofirkon tumani',   'slug' => 'shofirkon',     'sort_order' => 8],
-            ['name_uz' => 'Qorovulbozor tumani','slug' => 'qorovulbozor',  'sort_order' => 9],
-            ['name_uz' => 'Qorakoʻl tumani',    'slug' => 'qorakol',       'sort_order' => 10],
-            ['name_uz' => 'Gʻijduvon tumani',   'slug' => 'gijduvon',      'sort_order' => 11],
+        // region_slug => [cities...]
+        $map = [
+            'andijon' => [
+                'Andijon shahri',
+                'Andijon tumani',
+                'Asaka tumani',
+                'Baliqchi tumani',
+                'Bo‘z tumani',
+                'Buloqboshi tumani',
+                'Izboskan tumani',
+                'Qo‘rg‘ontepa tumani',
+                'Marhamat tumani',
+                'Oltinko‘l tumani',
+                'Paxtaobod tumani',
+                'Shahrixon tumani',
+                'Ulug‘nor tumani',
+                'Xo‘jaobod tumani',
+                'Jalaquduq tumani',
+            ],
+            'buxoro' => [
+                'Buxoro shahri',
+                'Buxoro tumani',
+                'Vobkent tumani',
+                'Jondor tumani',
+                'Kogon shahri',
+                'Kogon tumani',
+                'Olot tumani',
+                'Peshku tumani',
+                'Qorako‘l tumani',
+                'Qorovulbozor tumani',
+                'Romitan tumani',
+                'Shofirkon tumani',
+                'G‘ijduvon tumani',
+            ],
+            'fargona' => [
+                'Farg‘ona shahri',
+                'Beshariq tumani',
+                'Bog‘dod tumani',
+                'Buvayda tumani',
+                'Dang‘ara tumani',
+                'Farg‘ona tumani',
+                'Furqat tumani',
+                'Oltiariq tumani',
+                'Qo‘qon shahri',
+                'Qo‘shtepa tumani',
+                'Quva tumani',
+                'Rishton tumani',
+                'So‘x tumani',
+                'Toshloq tumani',
+                'Uchko‘prik tumani',
+                'Yozyovon tumani',
+            ],
+            'jizzax' => [
+                'Jizzax shahri',
+                'Arnasoy tumani',
+                'Baxmal tumani',
+                'Do‘stlik tumani',
+                'Forish tumani',
+                'G‘allaorol tumani',
+                'Mirzacho‘l tumani',
+                'Paxtakor tumani',
+                'Yangiobod tumani',
+                'Zafarobod tumani',
+                'Zarbdor tumani',
+                'Zomin tumani',
+            ],
+            'namangan' => [
+                'Namangan shahri',
+                'Chortoq tumani',
+                'Chust tumani',
+                'Kosonsoy tumani',
+                'Mingbuloq tumani',
+                'Namangan tumani',
+                'Norin tumani',
+                'Pop tumani',
+                'To‘raqo‘rg‘on tumani',
+                'Uchqo‘rg‘on tumani',
+                'Uychi tumani',
+                'Yangiqo‘rg‘on tumani',
+            ],
+            'navoiy' => [
+                'Navoiy shahri',
+                'Karmana tumani',
+                'Konimex tumani',
+                'Qiziltepa tumani',
+                'Navbahor tumani',
+                'Nurota tumani',
+                'Tomdi tumani',
+                'Uchquduq tumani',
+                'Xatirchi tumani',
+            ],
+            'qashqadaryo' => [
+                'Qarshi shahri',
+                'Dehqonobod tumani',
+                'G‘uzor tumani',
+                'Kasbi tumani',
+                'Kitob tumani',
+                'Koson tumani',
+                'Mirishkor tumani',
+                'Muborak tumani',
+                'Nishon tumani',
+                'Qamashi tumani',
+                'Qarshi tumani',
+                'Shahrisabz tumani',
+                'Yakkabog‘ tumani',
+            ],
+            'qoraqalpogiston' => [
+                'Nukus shahri',
+                'Amudaryo tumani',
+                'Beruniy tumani',
+                'Bo‘zatov tumani',
+                'Chimboy tumani',
+                'Ellikqal’a tumani',
+                'Kegeyli tumani',
+                'Mo‘ynoq tumani',
+                'Qanliko‘l tumani',
+                'Qo‘ng‘irot tumani',
+                'Qorao‘zak tumani',
+                'Shumanay tumani',
+                'Taxtako‘pir tumani',
+                'To‘rtko‘l tumani',
+                'Xo‘jayli tumani',
+            ],
+            'samarqand' => [
+                'Samarqand shahri',
+                'Bulung‘ur tumani',
+                'Ishtixon tumani',
+                'Jomboy tumani',
+                'Kattaqo‘rg‘on shahri',
+                'Kattaqo‘rg‘on tumani',
+                'Qo‘shrabot tumani',
+                'Narpay tumani',
+                'Nurobod tumani',
+                'Oqdaryo tumani',
+                'Payariq tumani',
+                'Pastdarg‘om tumani',
+                'Paxtachi tumani',
+                'Samarqand tumani',
+                'Toyloq tumani',
+                'Urgut tumani',
+            ],
+            'sirdaryo' => [
+                'Guliston shahri',
+                'Baxt tumani',
+                'Boyovut tumani',
+                'Guliston tumani',
+                'Hovos tumani',
+                'Mirzaobod tumani',
+                'Oqoltin tumani',
+                'Sayxunobod tumani',
+                'Sardoba tumani',
+                'Sirdaryo tumani',
+                'Xovos tumani',
+            ],
+            'surxondaryo' => [
+                'Termiz shahri',
+                'Angor tumani',
+                'Bandixon tumani',
+                'Boysun tumani',
+                'Denov tumani',
+                'Jarqo‘rg‘on tumani',
+                'Muzrabot tumani',
+                'Oltinsoy tumani',
+                'Qiziriq tumani',
+                'Qo‘mqo‘rg‘on tumani',
+                'Sariosiyo tumani',
+                'Sherobod tumani',
+                'Sho‘rchi tumani',
+                'Termiz tumani',
+                'Uzun tumani',
+            ],
+            'toshkent' => [
+                'Bekobod tumani',
+                'Bo‘stonliq tumani',
+                'Bo‘ka tumani',
+                'Chinoz tumani',
+                'Ohangaron tumani',
+                'Oqqo‘rg‘on tumani',
+                'Parkent tumani',
+                'Piskent tumani',
+                'Quyi Chirchiq tumani',
+                'O‘rtachirchiq tumani',
+                'Yangiyo‘l tumani',
+                'Yuqori Chirchiq tumani',
+                'Zangiota tumani',
+            ],
+            'toshkent-shahar' => [
+                'Bektemir tumani',
+                'Chilonzor tumani',
+                'Hamza tumani',
+                'Mirobod tumani',
+                'Mirzo Ulug‘bek tumani',
+                'Olmazor tumani',
+                'Sergeli tumani',
+                'Shayxontohur tumani',
+                'Uchtepa tumani',
+                'Yakkasaroy tumani',
+                'Yashnobod tumani',
+                'Yunusobod tumani',
+            ],
+            'xorazm' => [
+                'Urganch shahri',
+                'Bog‘ot tumani',
+                'Gurlan tumani',
+                'Hazorasp tumani',
+                'Xiva tumani',
+                'Qo‘shko‘pir tumani',
+                'Shovot tumani',
+                'Urganch tumani',
+                'Xonqa tumani',
+                'Yangiariq tumani',
+                'Yangibozor tumani',
+            ],
         ];
 
-        foreach ($cities as $item) {
-            City::updateOrCreate(
-                [
-                    'region_id' => $region->id,
-                    'slug'      => $item['slug'],
-                ],
-                [
-                    'name_uz'    => $item['name_uz'],
-                    'sort_order' => $item['sort_order'],
-                    'is_active'  => true,
-                ]
-            );
+        foreach ($map as $regionSlug => $cityNames) {
+            $region = Region::where('slug', $regionSlug)->first();
+            if (! $region) {
+                continue;
+            }
+
+            $sort = 1;
+            foreach ($cityNames as $name) {
+                City::updateOrCreate(
+                    [
+                        'region_id' => $region->id,
+                        'slug'      => str($name)->slug('-'),
+                    ],
+                    [
+                        'name_uz'    => $name,
+                        'sort_order' => $sort++,
+                        'is_active'  => true,
+                    ]
+                );
+            }
         }
     }
 }
