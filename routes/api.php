@@ -18,19 +18,18 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::post('/auth/get-info', [AuthController::class, 'me']);
 
+    // Viloyat va tumanlar ro'yxati (public, registratsiya formasi uchun)
+    Route::prefix('resources')->controller(ResourceController::class)->group(function () {
+        Route::get('/regions', 'regions');
+        Route::get('/cities', 'cities');
+    });
+
     Route::middleware('auth:api')->group(function () {
         Route::apiResource('/users', UserController::class);
         Route::apiResource('/ads', AdController::class);
 
         Route::prefix('admin')->group(function () {
             Route::apiResource('categories', CategoryController::class);
-        });
-
-        Route::group(['prefix' => 'resources'], function () {
-            Route::controller(ResourceController::class)->group(function () {
-                Route::get('/regions', 'regions');
-                Route::get('/cities', 'cities');
-            });
         });
 
         Route::post('/logout', [AuthController::class, 'logout']);

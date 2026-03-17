@@ -24,9 +24,10 @@ class UserSeeder extends Seeder
         }
 
         User::create([
-            'name'      => 'Admin',
+            'fname'     => 'Super',
+            'lname'     => 'Admin',
             'phone'     => '+998901234567',
-            'role'      => 'admin',
+            'role'      => User::ROLE_ADMIN,
             'email'     => 'admin@gmail.com',
             'password'  => Hash::make('11111'),
             'region_id' => $region?->id,
