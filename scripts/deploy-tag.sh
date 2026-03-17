@@ -9,7 +9,7 @@ if [[ -z "${TAG}" ]]; then
   exit 1
 fi
 
-APP_DIR="${APP_DIR:-/var/www/start-api}"
+APP_DIR="${APP_DIR:-/var/www/daladan-api}"
 PHP_BIN="${PHP_BIN:-php}"
 COMPOSER_BIN="${COMPOSER_BIN:-composer}"
 QUEUE_RESTART="${QUEUE_RESTART:-true}"

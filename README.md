@@ -115,9 +115,9 @@ Clone project and set permissions:
 ```bash
 mkdir -p /var/www
 cd /var/www
-git clone https://github.com/Positive28/start-api.git start-api
-sudo chown -R www-data:www-data /var/www/start-api
-sudo chmod -R 775 /var/www/start-api/storage /var/www/start-api/bootstrap/cache
+git clone https://github.com/Positive28/daladan-api.git daladan-api
+sudo chown -R www-data:www-data /var/www/daladan-api
+sudo chmod -R 775 /var/www/daladan-api/storage /var/www/daladan-api/bootstrap/cache
 ```
 
 `.env` is created automatically from `ENV_CONTENT` secret during each deploy. Do not create it manually.
@@ -126,7 +126,7 @@ Configure Nginx to serve the Laravel app:
 
 ```bash
 # 1. Copy config to sites-available (required before symlink)
-sudo cp /var/www/start-api/deploy/nginx-start-api.conf /etc/nginx/sites-available/start-api
+sudo cp /var/www/daladan-api/deploy/nginx-start-api.conf /etc/nginx/sites-available/start-api
 
 # 2. Enable it as default site
 sudo ln -sf /etc/nginx/sites-available/start-api /etc/nginx/sites-enabled/default
@@ -154,7 +154,7 @@ ls /var/run/php/
 - `VPS_HOST` = `170.168.6.145`
 - `VPS_USER` = `root` (or a dedicated deploy user)
 - `VPS_SSH_KEY` = private SSH key used by GitHub Actions
-- `VPS_APP_DIR` = `/var/www/start-api` (optional, default is this path)
+- `VPS_APP_DIR` = `/var/www/daladan-api` (optional, default is this path)
 - `VPS_PORT` = `22` (optional, default is 22)
 
 **Variables** (Settings → Secrets and variables → Actions → Variables) — values are visible after creation:

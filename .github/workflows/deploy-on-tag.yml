@@ -74,7 +74,7 @@ jobs:
         run: |
           set -euo pipefail
           PORT="${VPS_PORT:-22}"
-          APP_DIR="${VPS_APP_DIR:-/var/www/start-api}"
+          APP_DIR="${VPS_APP_DIR:-/var/www/daladan-api}"
           DEPLOY_SCRIPT_REMOTE="/tmp/deploy-tag.sh"
 
           # Upload deploy script and .env
