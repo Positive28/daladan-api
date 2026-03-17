@@ -24,7 +24,8 @@ class User extends Authenticatable implements JWTSubject, HasMedia
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'fname',
+        'lname',
         'phone',
         'telegram',
         'region_id',

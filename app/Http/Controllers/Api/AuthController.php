@@ -34,14 +34,28 @@ class AuthController extends Controller
      * @OA\Post(
      *     path="/register",
      *     tags={"Auth"},
-     *     summary="Yangi foydalanuvchini ro'yxatdan o'tkazish",
+     *     summary="Yangi foydalanuvchini ro'yxatdan o'tkazish (parol yoki telegram)",
+     *     @OA\Parameter(
+     *         name="auth_type",
+     *         in="query",
+     *         required=true,
+     *         description="Registratsiya turi: password yoki telegram",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"password","telegram"},
+     *             default="password"
+     *         )
+     *     ),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"phone","password","name"},
+     *             required={"phone","password","fname","lname","region_id","city_id"},
      *             @OA\Property(property="phone", type="string", example="+998901234567"),
      *             @OA\Property(property="password", type="string", example="parol123"),
-     *             @OA\Property(property="name", type="string", example="Ism Familiya"),
+     *             @OA\Property(property="fname", type="string", example="Ism"),
+     *             @OA\Property(property="lname", type="string", example="Familiya"),
+     *             @OA\Property(property="region_id", type="integer", example=1),
+     *             @OA\Property(property="city_id", type="integer", example=10),
      *             @OA\Property(property="email", type="string", nullable=true, example="user@example.com"),
      *             @OA\Property(property="telegram", type="string", nullable=true, example="@username")
      *         )
@@ -56,21 +70,24 @@ class AuthController extends Controller
      *     )
      * )
      */
-    
     public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'phone'    => 'required|string|max:20|unique:users,phone',
-            'password' => 'required|string|min:6',
-            'name'     => 'required|string|max:255',
-            'email'    => 'nullable|email|unique:users,email',
-            'telegram' => 'nullable|string|max:80',
-            'region_id' => 'required|integer|exists:regions,id',
-            'city_id'   => 'required|integer|exists:cities,id',
+            'auth_type' => 'required|string|in:password,telegram',
+            'phone'     => 'required|string|max:20|unique:users,phone',
+            'password'  => 'required|string|min:6',
+            'fname'     => 'required|string|max:255',
+            'lname'     => 'required|string|max:255',
+            'email'     => 'nullable|email|unique:users,email',
+            'telegram'  => 'nullable|string|max:80',
+            'region_id' => 'nullable|integer|exists:regions,id',
+            'city_id'   => 'nullable|integer|exists:cities,id',
         ]);
 
+        // Hozircha ikkala auth_type uchun ham bir xil ishlaydi
         $validated['role'] = User::ROLE_USER;
         User::create($validated);
+
         $token = auth('api')->attempt([
             'phone'    => $request->phone,
             'password' => $request->password,
