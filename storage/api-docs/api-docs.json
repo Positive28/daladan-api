@@ -208,6 +208,46 @@
                     }
                 ]
             }
+        },
+        "/resources/regions": {
+            "get": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Faol viloyatlar ro'yxati (ichida faol tumanlari bilan)",
+                "operationId": "acb00a3f86bbadd29b5cb67ab38fab64",
+                "responses": {
+                    "200": {
+                        "description": "Viloyatlar ro'yxati"
+                    }
+                }
+            }
+        },
+        "/resources/cities": {
+            "get": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Faol tumanlar ro'yxati (ixtiyoriy region_id bo'yicha)",
+                "operationId": "67d442ec29fc3f032ba6c8b5950348fc",
+                "parameters": [
+                    {
+                        "name": "region_id",
+                        "in": "query",
+                        "description": "Faqat shu viloyatga tegishli tumanlarni olish uchun",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tumanlar ro'yxati"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -220,6 +260,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Resources",
+            "description": "Viloyat va tumanlar resurslari"
+        },
         {
             "name": "Auth",
             "description": "Auth"
