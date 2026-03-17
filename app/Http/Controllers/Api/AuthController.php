@@ -86,14 +86,16 @@ class AuthController extends Controller
 
         // Hozircha ikkala auth_type uchun ham bir xil ishlaydi
         $validated['role'] = User::ROLE_USER;
-        User::create($validated);
+        $user = User::create($validated);
 
-        $token = auth('api')->attempt([
-            'phone'    => $request->phone,
-            'password' => $request->password,
-        ]);
+        // Login the newly-created user directly to avoid credential re-check edge cases.
+        $token = auth('api')->login($user);
+        if (!$token) {
+            return response()->json([
+                'message' => 'Registration succeeded, but token creation failed.',
+            ], 500);
+        }
 
-        $user = auth('api')->user();
         $user->load(['region', 'city']);
 
         return response()->json([
