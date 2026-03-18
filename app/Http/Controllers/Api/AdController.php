@@ -50,7 +50,8 @@ class AdController extends Controller
      * )
      */
     public function store(Request $request): JsonResponse
-    {
+    {   
+        // dd($request->all());
         $user = $request->user();
 
         if (!$user->region_id || !$user->city_id) {
@@ -89,7 +90,9 @@ class AdController extends Controller
 
         $ad->load(['category', 'subcategory', 'seller.region', 'seller.city']);
 
-        return response()->json(response()->successJson($ad), 201);
+        // return response()->json(response()->successJson($ad), 201);
+
+        return response()->json($ad, 201);
     }
 
     public function show(Request $request, string $id): JsonResponse

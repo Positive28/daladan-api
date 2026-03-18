@@ -18,20 +18,25 @@ class UserSeeder extends Seeder
         // 2. Buxoro tumani (yoki istalgan boshqa tuman) ni topamiz
         $city = null;
         if ($region) {
+            // CitySeeder'da slug nomdan avtomatik yasalgani uchun
+            // "qorovulbozor" ko'rinishi bilan filtr qilamiz.
             $city = City::where('region_id', $region->id)
-                ->where('slug', 'qorovulbozor') // masalan: Buxoro tumani
+                ->where('slug', 'like', '%qorovulbozor%')
                 ->first();
         }
 
-        User::create([
+        User::updateOrCreate(
+            ['phone' => '+998901234567'],
+            [
             'fname'     => 'Super',
             'lname'     => 'Admin',
-            'phone'     => '+998901234567',
             'role'      => User::ROLE_ADMIN,
             'email'     => 'admin@gmail.com',
-            'password'  => Hash::make('11111'),
+            // Model cast "hashed" bo'lgani uchun bu yerda plain password beramiz.
+            'password'  => '11111',
             'region_id' => $region?->id,
             'city_id'   => $city?->id,
-        ]);
+            ]
+        );
     }
 }
