@@ -21,6 +21,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
     Route::prefix('resources')->controller(ResourceController::class)->group(function () {
         Route::get('/regions', 'regions');
         Route::get('/cities', 'cities');
+        Route::get('/categories', 'categories');
+        Route::get('/subcategories', 'subcategories');
     });
 
     Route::middleware('auth:api')->group(function () {
@@ -30,6 +32,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
             Route::put('/', [UserController::class, 'updateProfile']);
             Route::post('/avatar', [UserController::class, 'updateAvatar']);
             Route::put('/password', [UserController::class, 'updatePassword']);
+            // Profil sahifasidan e'lon qo'shish
+            Route::post('/ads', [AdController::class, 'store']);
         });
         Route::apiResource('/ads', AdController::class);
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ad;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Annotations as OA;
 
 
 class AdController extends Controller
@@ -20,6 +21,34 @@ class AdController extends Controller
         return response()->successJson($ads);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/profile/ads",
+     *     tags={"Ads"},
+     *     summary="Profil sahifasidan e'lon yaratish",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"category_id","subcategory_id","title","price","quantity","unit"},
+     *             @OA\Property(property="category_id", type="integer", example=1),
+     *             @OA\Property(property="subcategory_id", type="integer", example=10),
+     *             @OA\Property(property="district", type="string", nullable=true),
+     *             @OA\Property(property="title", type="string", example="Olma sotiladi"),
+     *             @OA\Property(property="description", type="string", nullable=true),
+     *             @OA\Property(property="price", type="number", format="decimal", example=15000),
+     *             @OA\Property(property="quantity", type="number", format="decimal", example=100),
+     *             @OA\Property(property="quantity_description", type="string", nullable=true),
+     *             @OA\Property(property="unit", type="string", example="kg"),
+     *             @OA\Property(property="delivery_info", type="string", nullable=true),
+     *             @OA\Property(property="media", type="array", items=@OA\Items(type="string", format="binary"), nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="E'lon yaratildi"),
+     *     @OA\Response(response=422, description="Validatsiya xatosi"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -40,7 +69,7 @@ class AdController extends Controller
             'price'               => 'required|numeric|min:0',
             'quantity'            => 'required|numeric|min:0',
             'quantity_description' => 'nullable|string|max:50',
-            'unit'                => 'required|string|max:30',
+            'unit'                => 'nullable|string|max:30',
             'delivery_info'       => 'nullable|string|max:255',
             'media'               => 'nullable|array',
             'media.*'             => 'file|mimetypes:image/jpeg,image/png,image/webp,video/mp4,video/quicktime|max:51200',

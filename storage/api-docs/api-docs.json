@@ -12,6 +12,101 @@
         }
     ],
     "paths": {
+        "/profile/ads": {
+            "post": {
+                "tags": [
+                    "Ads"
+                ],
+                "summary": "Profil sahifasidan e'lon yaratish",
+                "operationId": "db1c9c5dd9d4fef529068d99d6edc72a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "category_id",
+                                    "subcategory_id",
+                                    "title",
+                                    "price",
+                                    "quantity",
+                                    "unit"
+                                ],
+                                "properties": {
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "subcategory_id": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "district": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Olma sotiladi"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "decimal",
+                                        "example": 15000
+                                    },
+                                    "quantity": {
+                                        "type": "number",
+                                        "format": "decimal",
+                                        "example": 100
+                                    },
+                                    "quantity_description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "unit": {
+                                        "type": "string",
+                                        "example": "kg"
+                                    },
+                                    "delivery_info": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "media": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        },
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "E'lon yaratildi"
+                    },
+                    "422": {
+                        "description": "Validatsiya xatosi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/register": {
             "post": {
                 "tags": [
@@ -249,6 +344,46 @@
                 }
             }
         },
+        "/resources/categories": {
+            "get": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Faol kategoriyalar ro'yxati",
+                "operationId": "c66ba976f0f3099f8baf50bf4eb353f5",
+                "responses": {
+                    "200": {
+                        "description": "Kategoriyalar ro'yxati"
+                    }
+                }
+            }
+        },
+        "/resources/subcategories": {
+            "get": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Faol subkategoriyalar ro'yxati (category_id bo'yicha filter)",
+                "operationId": "d69c8e111cec8c0f7682e0cc23c0f54a",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Faqat shu kategoriyaga tegishli subkategoriyalar uchun",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Subkategoriyalar ro'yxati"
+                    }
+                }
+            }
+        },
         "/profile": {
             "get": {
                 "tags": [
@@ -443,6 +578,10 @@
         {
             "name": "Profile",
             "description": "Autentifikatsiyalangan foydalanuvchi profili"
+        },
+        {
+            "name": "Ads",
+            "description": "Ads"
         },
         {
             "name": "Auth",

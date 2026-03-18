@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Ad;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Annotations as OA;
@@ -32,7 +33,16 @@ class UserController extends Controller
     {
         $user = auth('api')->user();
         $user->load(['region', 'city']);
-        
+
+        // Profilda foydalanuvchining e'lonlari ham ko'rinsin.
+        // Odatiy UX: bu yerda faqat bir nechta eng oxirgi e'lonni ko'rsatamiz.
+        $user->load([
+            'ads' => fn ($q) => $q
+                ->with(['category', 'subcategory', 'seller.region', 'seller.city'])
+                ->orderByDesc('created_at')
+                ->limit(10),
+        ]);
+
         return response()->json($user);
     }
     
