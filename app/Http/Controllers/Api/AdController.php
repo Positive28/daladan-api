@@ -11,6 +11,29 @@ use OpenApi\Annotations as OA;
 
 class AdController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/ads",
+     *     tags={"Ads"},
+     *     summary="Foydalanuvchining e'lonlari ro'yxati",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         required=false,
+     *         description="Sahifadagi elementlar soni",
+     *         @OA\Schema(type="integer", example=15)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="E'lonlar ro'yxati"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
     public function index(Request $request): JsonResponse
     {
         $ads = Ad::where('seller_id', $request->user()->id)
@@ -29,29 +52,35 @@ class AdController extends Controller
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             required={"category_id","subcategory_id","title","price","quantity","unit"},
-     *             @OA\Property(property="category_id", type="integer", example=1),
-     *             @OA\Property(property="subcategory_id", type="integer", example=10),
-     *             @OA\Property(property="district", type="string", nullable=true),
-     *             @OA\Property(property="title", type="string", example="Olma sotiladi"),
-     *             @OA\Property(property="description", type="string", nullable=true),
-     *             @OA\Property(property="price", type="number", format="decimal", example=15000),
-     *             @OA\Property(property="quantity", type="number", format="decimal", example=100),
-     *             @OA\Property(property="quantity_description", type="string", nullable=true),
-     *             @OA\Property(property="unit", type="string", example="kg"),
-     *             @OA\Property(property="delivery_info", type="string", nullable=true),
-     *             @OA\Property(property="media", type="array", items=@OA\Items(type="string", format="binary"), nullable=true)
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"category_id","subcategory_id","title","price","quantity"},
+     *                 @OA\Property(property="category_id", type="integer", example=1),
+     *                 @OA\Property(property="subcategory_id", type="integer", example=10),
+     *                 @OA\Property(property="district", type="string", nullable=true),
+     *                 @OA\Property(property="title", type="string", example="Olma sotiladi"),
+     *                 @OA\Property(property="description", type="string", nullable=true),
+     *                 @OA\Property(property="price", type="number", example=15000),
+     *                 @OA\Property(property="quantity", type="number", example=100),
+     *                 @OA\Property(property="quantity_description", type="string", nullable=true),
+     *                 @OA\Property(property="unit", type="string", example="kg"),
+     *                 @OA\Property(property="delivery_info", type="string", nullable=true),
+     *                 @OA\Property(
+     *                     property="media[]",
+     *                     type="array",
+     *                     @OA\Items(type="string", format="binary")
+     *                 )
+     *             )
      *         )
      *     ),
      *     @OA\Response(response=201, description="E'lon yaratildi"),
-     *     @OA\Response(response=422, description="Validatsiya xatosi"),
+     *     @OA\Response(response=422, description="Validatsiya xatosi yoki profil manzili to'ldirilmagan"),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
     public function store(Request $request): JsonResponse
     {   
-        // dd($request->all());
         $user = $request->user();
 
         if (!$user->region_id || !$user->city_id) {
@@ -90,11 +119,36 @@ class AdController extends Controller
 
         $ad->load(['category', 'subcategory', 'seller.region', 'seller.city']);
 
-        // return response()->json(response()->successJson($ad), 201);
-
         return response()->json($ad, 201);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/ads/{id}",
+     *     tags={"Ads"},
+     *     summary="Bitta e'lonni olish",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="E'lon ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="E'lon topildi"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="E'lon topilmadi"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
     public function show(Request $request, string $id): JsonResponse
     {
         $ad = Ad::with(['category', 'subcategory', 'seller.region', 'seller.city'])
@@ -109,6 +163,81 @@ class AdController extends Controller
         return response()->successJson($ad);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/ads/{id}",
+     *     tags={"Ads"},
+     *     summary="E'lonni yangilash (method spoofing: _method=PUT)",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="E'lon ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="_method", type="string", example="PUT"),
+     *                 @OA\Property(property="category_id", type="integer", example=1),
+     *                 @OA\Property(property="subcategory_id", type="integer", example=10),
+     *                 @OA\Property(property="district", type="string", nullable=true),
+     *                 @OA\Property(property="title", type="string", example="Yangi sarlavha"),
+     *                 @OA\Property(property="description", type="string", nullable=true),
+     *                 @OA\Property(property="price", type="number", example=16000),
+     *                 @OA\Property(property="quantity", type="number", example=80),
+     *                 @OA\Property(property="quantity_description", type="string", nullable=true),
+     *                 @OA\Property(property="unit", type="string", example="kg"),
+     *                 @OA\Property(property="delivery_info", type="string", nullable=true),
+     *                 @OA\Property(property="status", type="string", enum={"active","sold","deleted"}),
+     *                 @OA\Property(
+     *                     property="delete_media_ids[]",
+     *                     type="array",
+     *                     @OA\Items(type="integer", example=5)
+     *                 ),
+     *                 @OA\Property(
+     *                     property="media[]",
+     *                     type="array",
+     *                     @OA\Items(type="string", format="binary")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="E'lon yangilandi"),
+     *     @OA\Response(response=404, description="E'lon topilmadi"),
+     *     @OA\Response(response=422, description="Validatsiya xatosi"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     *
+     * @OA\Put(
+     *     path="/ads/{id}",
+     *     tags={"Ads"},
+     *     summary="E'lonni yangilash (JSON yoki form-data, faylsiz holat)",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="title", type="string", example="Yangi sarlavha"),
+     *             @OA\Property(property="price", type="number", example=16000),
+     *             @OA\Property(property="quantity", type="number", example=80),
+     *             @OA\Property(property="status", type="string", enum={"active","sold","deleted"})
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="E'lon yangilandi"),
+     *     @OA\Response(response=404, description="E'lon topilmadi"),
+     *     @OA\Response(response=422, description="Validatsiya xatosi"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
     public function update(Request $request, string $id): JsonResponse
     {
         $ad = Ad::where('id', $id)->where('seller_id', $request->user()->id)->first();
@@ -153,6 +282,24 @@ class AdController extends Controller
         return response()->successJson($ad->fresh(['category', 'subcategory', 'seller.region', 'seller.city']));
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/ads/{id}",
+     *     tags={"Ads"},
+     *     summary="E'lonni o'chirish",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="E'lon ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(response=200, description="E'lon o'chirildi"),
+     *     @OA\Response(response=404, description="E'lon topilmadi"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
     public function destroy(Request $request, string $id): JsonResponse
     {
         $ad = Ad::where('id', $id)->where('seller_id', $request->user()->id)->first();

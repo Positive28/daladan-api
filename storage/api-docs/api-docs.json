@@ -12,6 +12,40 @@
         }
     ],
     "paths": {
+        "/ads": {
+            "get": {
+                "tags": [
+                    "Ads"
+                ],
+                "summary": "Foydalanuvchining e'lonlari ro'yxati",
+                "operationId": "0687733bcc5e61deb4c3758eb8a92b74",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Sahifadagi elementlar soni",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "E'lonlar ro'yxati"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/profile/ads": {
             "post": {
                 "tags": [
@@ -22,15 +56,14 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "required": [
                                     "category_id",
                                     "subcategory_id",
                                     "title",
                                     "price",
-                                    "quantity",
-                                    "unit"
+                                    "quantity"
                                 ],
                                 "properties": {
                                     "category_id": {
@@ -55,12 +88,10 @@
                                     },
                                     "price": {
                                         "type": "number",
-                                        "format": "decimal",
                                         "example": 15000
                                     },
                                     "quantity": {
                                         "type": "number",
-                                        "format": "decimal",
                                         "example": 100
                                     },
                                     "quantity_description": {
@@ -75,13 +106,12 @@
                                         "type": "string",
                                         "nullable": true
                                     },
-                                    "media": {
+                                    "media[]": {
                                         "type": "array",
                                         "items": {
                                             "type": "string",
                                             "format": "binary"
-                                        },
-                                        "nullable": true
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -94,7 +124,264 @@
                         "description": "E'lon yaratildi"
                     },
                     "422": {
+                        "description": "Validatsiya xatosi yoki profil manzili to'ldirilmagan"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/ads/{id}": {
+            "get": {
+                "tags": [
+                    "Ads"
+                ],
+                "summary": "Bitta e'lonni olish",
+                "operationId": "f3f3817a923e7099b2539b6d3d77c742",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "E'lon ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "E'lon topildi"
+                    },
+                    "404": {
+                        "description": "E'lon topilmadi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Ads"
+                ],
+                "summary": "E'lonni yangilash (JSON yoki form-data, faylsiz holat)",
+                "operationId": "32274e4f232597b3e811519e8cf262be",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Yangi sarlavha"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "example": 16000
+                                    },
+                                    "quantity": {
+                                        "type": "number",
+                                        "example": 80
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "sold",
+                                            "deleted"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "E'lon yangilandi"
+                    },
+                    "404": {
+                        "description": "E'lon topilmadi"
+                    },
+                    "422": {
                         "description": "Validatsiya xatosi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ads"
+                ],
+                "summary": "E'lonni yangilash (method spoofing: _method=PUT)",
+                "operationId": "ecf790857b2c6b212b91f4d0c16b3c4c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "E'lon ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "_method": {
+                                        "type": "string",
+                                        "example": "PUT"
+                                    },
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "subcategory_id": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "district": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Yangi sarlavha"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "example": 16000
+                                    },
+                                    "quantity": {
+                                        "type": "number",
+                                        "example": 80
+                                    },
+                                    "quantity_description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "unit": {
+                                        "type": "string",
+                                        "example": "kg"
+                                    },
+                                    "delivery_info": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "sold",
+                                            "deleted"
+                                        ]
+                                    },
+                                    "delete_media_ids[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 5
+                                        }
+                                    },
+                                    "media[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "E'lon yangilandi"
+                    },
+                    "404": {
+                        "description": "E'lon topilmadi"
+                    },
+                    "422": {
+                        "description": "Validatsiya xatosi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Ads"
+                ],
+                "summary": "E'lonni o'chirish",
+                "operationId": "1565fc5db45006f8c1044cf26db8b241",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "E'lon ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "E'lon o'chirildi"
+                    },
+                    "404": {
+                        "description": "E'lon topilmadi"
                     },
                     "401": {
                         "description": "Unauthorized"
