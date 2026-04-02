@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('ad_id')->unique();
             $table->foreign('ad_id')->references('id')->on('ads')->cascadeOnDelete();
-            $table->enum('packaging', ['bag', 'bigbag', 'bulk'])->nullable();
+            $table->string('title', 150);
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

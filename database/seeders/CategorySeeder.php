@@ -34,6 +34,30 @@ class CategorySeeder extends Seeder
                 'sort_order' => 4,
                 'is_active' => true,
             ],
+            [
+                'name' => 'Parranda',
+                'slug' => 'parranda',
+                'sort_order' => 5,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Yem va ozuqa',
+                'slug' => 'yem-ozuqa',
+                'sort_order' => 6,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'O‘g‘it va kimyoviylar',
+                'slug' => 'ogit-kimyoviylar',
+                'sort_order' => 7,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Texnika va uskunalar',
+                'slug' => 'texnika-uskunalar',
+                'sort_order' => 8,
+                'is_active' => true,
+            ],
         ];
 
         foreach ($categories as $item) {

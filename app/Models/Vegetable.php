@@ -9,21 +9,9 @@ class Vegetable extends Model
 {
     use HasAdDetail;
 
-    protected $primaryKey = 'id';
-
-    public $incrementing = true;
-
     protected $fillable = [
         'ad_id',
-        'grade',
-        'packaging',
-        'harvest_date',
+        'title',
+        'description',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'harvest_date' => 'date',
-        ];
-    }
 }

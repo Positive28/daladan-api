@@ -15,9 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('ad_id')->unique();
             $table->foreign('ad_id')->references('id')->on('ads')->cascadeOnDelete();
-            $table->string('variety', 80)->nullable();
-            $table->enum('packaging', ['box', 'bag', 'bulk'])->nullable();
-            $table->date('harvest_date')->nullable();
+            $table->string('title', 150);
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

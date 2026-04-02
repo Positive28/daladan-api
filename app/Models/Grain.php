@@ -9,12 +9,9 @@ class Grain extends Model
 {
     use HasAdDetail;
 
-    protected $primaryKey = 'id';
-
-    public $incrementing = true;
-
     protected $fillable = [
         'ad_id',
-        'packaging',
+        'title',
+        'description',
     ];
 }

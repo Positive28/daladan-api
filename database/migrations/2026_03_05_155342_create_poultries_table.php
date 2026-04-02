@@ -15,9 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('ad_id')->unique();
             $table->foreign('ad_id')->references('id')->on('ads')->cascadeOnDelete();
-            $table->smallInteger('age_weeks')->nullable();
-            $table->smallInteger('eggs_per_month')->nullable();
-            $table->boolean('vaccinated');
+            $table->string('title', 150);
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('ad_id')->unique();
             $table->foreign('ad_id')->references('id')->on('ads')->cascadeOnDelete();
-            $table->enum('moisture_level', ['dry', 'medium', 'wet'])->nullable();
-            $table->enum('bale_type', ['pressed', 'roll', 'loose'])->nullable();
+            $table->string('title', 150);
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

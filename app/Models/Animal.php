@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Models\Concerns\HasAdDetail;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Animal extends Model
@@ -13,23 +12,9 @@ class Animal extends Model
 
     protected $fillable = [
         'ad_id',
-        'age_months',
-        'weight_kg',
-        'breed',
-        'purpose',
-        'health',
-        'milk_per_day_l',
-        'is_pregnant',
+        'title',
+        'description',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'weight_kg'      => 'decimal:1',
-            'milk_per_day_l' => 'decimal:1',
-            'is_pregnant'    => 'boolean',
-        ];
-    }
 
     public function registerMediaCollections(): void
     {

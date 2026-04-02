@@ -4,13 +4,23 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ad;
+use App\Models\Animal;
+use App\Models\Category;
+use App\Models\Forage;
+use App\Models\Fruit;
+use App\Models\Grain;
+use App\Models\Poultry;
+use App\Models\Vegetable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use OpenApi\Annotations as OA;
 
 
 class AdController extends Controller
 {
+    private const DETAIL_RELATIONS = ['animal', 'poultry', 'grain', 'fruit', 'forage', 'vegetable'];
+
     /**
      * @OA\Get(
      *     path="/ads",
@@ -37,7 +47,7 @@ class AdController extends Controller
     public function index(Request $request): JsonResponse
     {
         $ads = Ad::where('seller_id', $request->user()->id)
-            ->with(['category', 'subcategory', 'seller.region', 'seller.city'])
+            ->with(['category', 'subcategory', 'seller.region', 'seller.city', ...self::DETAIL_RELATIONS])
             ->orderByDesc('created_at')
             ->paginate($request->input('per_page', 15));
 
@@ -63,7 +73,6 @@ class AdController extends Controller
      *                 @OA\Property(property="description", type="string", nullable=true),
      *                 @OA\Property(property="price", type="number", example=15000),
      *                 @OA\Property(property="quantity", type="number", example=100),
-     *                 @OA\Property(property="quantity_description", type="string", nullable=true),
      *                 @OA\Property(property="unit", type="string", example="kg"),
      *                 @OA\Property(property="delivery_info", type="string", nullable=true),
      *                 @OA\Property(
@@ -92,17 +101,22 @@ class AdController extends Controller
 
         $validated = $request->validate([
             'category_id'          => 'required|integer|exists:categories,id',
-            'subcategory_id'      => 'required|integer|exists:subcategories,id',
+            'subcategory_id'      => [
+                'required',
+                'integer',
+                Rule::exists('subcategories', 'id')->where(fn ($q) => $q->where('category_id', $request->input('category_id'))),
+            ],
             'district'            => 'nullable|string|max:100',
             'title'               => 'required|string|max:150',
             'description'         => 'nullable|string',
             'price'               => 'required|numeric|min:0',
             'quantity'            => 'required|numeric|min:0',
-            'quantity_description' => 'nullable|string|max:50',
-            'unit'                => 'nullable|string|max:30',
+            'unit'                => 'required|string|max:30',
             'delivery_info'       => 'nullable|string|max:255',
             'media'               => 'nullable|array',
             'media.*'             => 'file|mimetypes:image/jpeg,image/png,image/webp,video/mp4,video/quicktime|max:51200',
+        ], [
+            'subcategory_id.exists' => 'Subkategoriya tanlangan kategoriyaga tegishli emas.',
         ]);
 
         $validated['seller_id'] = $user->id;
@@ -110,6 +124,7 @@ class AdController extends Controller
         unset($validated['media']);
 
         $ad = Ad::create($validated);
+        $this->syncDetailByCategory($ad);
 
         if ($request->hasFile('media')) {
             foreach ($request->file('media') as $file) {
@@ -117,7 +132,7 @@ class AdController extends Controller
             }
         }
 
-        $ad->load(['category', 'subcategory', 'seller.region', 'seller.city']);
+        $ad->load(['category', 'subcategory', 'seller.region', 'seller.city', ...self::DETAIL_RELATIONS]);
 
         return response()->json($ad, 201);
     }
@@ -151,7 +166,7 @@ class AdController extends Controller
      */
     public function show(Request $request, string $id): JsonResponse
     {
-        $ad = Ad::with(['category', 'subcategory', 'seller.region', 'seller.city'])
+        $ad = Ad::with(['category', 'subcategory', 'seller.region', 'seller.city', ...self::DETAIL_RELATIONS])
             ->where('id', $id)
             ->where('seller_id', $request->user()->id)
             ->first();
@@ -189,7 +204,6 @@ class AdController extends Controller
      *                 @OA\Property(property="description", type="string", nullable=true),
      *                 @OA\Property(property="price", type="number", example=16000),
      *                 @OA\Property(property="quantity", type="number", example=80),
-     *                 @OA\Property(property="quantity_description", type="string", nullable=true),
      *                 @OA\Property(property="unit", type="string", example="kg"),
      *                 @OA\Property(property="delivery_info", type="string", nullable=true),
      *                 @OA\Property(property="status", type="string", enum={"active","sold","deleted"}),
@@ -246,15 +260,14 @@ class AdController extends Controller
             return response()->errorJson('E\'lon topilmadi.', 404);
         }
 
-        $validated = $request->validate([
+        $rules = [
             'category_id'          => 'sometimes|integer|exists:categories,id',
-            'subcategory_id'      => 'sometimes|integer|exists:subcategories,id',
+            'subcategory_id'      => 'sometimes|integer',
             'district'            => 'nullable|string|max:100',
             'title'               => 'sometimes|string|max:150',
             'description'         => 'nullable|string',
             'price'               => 'sometimes|numeric|min:0',
             'quantity'            => 'sometimes|numeric|min:0',
-            'quantity_description' => 'nullable|string|max:50',
             'unit'                => 'sometimes|string|max:30',
             'delivery_info'       => 'nullable|string|max:255',
             'status'              => 'sometimes|string|in:active,sold,deleted',
@@ -262,10 +275,27 @@ class AdController extends Controller
             'media.*'             => 'file|mimetypes:image/jpeg,image/png,image/webp,video/mp4,video/quicktime|max:51200',
             'delete_media_ids'    => 'nullable|array',
             'delete_media_ids.*'  => 'integer|exists:media,id',
+        ];
+
+        // If category is being changed, subcategory must be provided and must belong to that category.
+        if ($request->filled('category_id') && ! $request->filled('subcategory_id')) {
+            $rules['subcategory_id'] = ['required', 'integer'];
+        }
+
+        $categoryIdForSub = $request->input('category_id', $ad->category_id);
+        if ($request->filled('subcategory_id')) {
+            $rules['subcategory_id'][] = Rule::exists('subcategories', 'id')
+                ->where(fn ($q) => $q->where('category_id', $categoryIdForSub));
+        }
+
+        $validated = $request->validate($rules, [
+            'subcategory_id.exists' => 'Subkategoriya tanlangan kategoriyaga tegishli emas.',
+            'subcategory_id.required' => 'Kategoriya o‘zgartirilsa, subkategoriya ham yuborilishi kerak.',
         ]);
 
         unset($validated['media'], $validated['delete_media_ids']);
         $ad->update($validated);
+        $this->syncDetailByCategory($ad->fresh());
 
         if ($request->filled('delete_media_ids')) {
             foreach ($request->delete_media_ids as $mediaId) {
@@ -279,7 +309,7 @@ class AdController extends Controller
             }
         }
 
-        return response()->successJson($ad->fresh(['category', 'subcategory', 'seller.region', 'seller.city']));
+        return response()->successJson($ad->fresh(['category', 'subcategory', 'seller.region', 'seller.city', ...self::DETAIL_RELATIONS]));
     }
 
     /**
@@ -311,5 +341,38 @@ class AdController extends Controller
         $ad->delete();
 
         return response()->successJson(['message' => 'E\'lon o\'chirildi.']);
+    }
+
+    private function syncDetailByCategory(Ad $ad): void
+    {
+        $slug = Category::query()->whereKey($ad->category_id)->value('slug');
+        if (!$slug) {
+            return;
+        }
+
+        $map = [
+            'chorva-hayvonlari' => Animal::class,
+            'parranda' => Poultry::class,
+            'don' => Grain::class,
+            'meva' => Fruit::class,
+            'yem-ozuqa' => Forage::class,
+            'sabzavot' => Vegetable::class,
+        ];
+
+        $targetModel = $map[$slug] ?? null;
+
+        foreach ($map as $categorySlug => $modelClass) {
+            if ($modelClass === $targetModel) {
+                continue;
+            }
+            $modelClass::query()->where('ad_id', $ad->id)->delete();
+        }
+
+        if ($targetModel) {
+            $targetModel::updateOrCreate(
+                ['ad_id' => $ad->id],
+                ['title' => $ad->title, 'description' => $ad->description]
+            );
+        }
     }
 }

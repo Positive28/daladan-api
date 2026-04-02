@@ -73,8 +73,10 @@ class AuthController extends Controller
      */
     public function register(Request $request): JsonResponse
     {
+        // auth_type is taken from query string (Swagger lists it as query param).
+        $request->merge(['auth_type' => $request->query('auth_type', 'password')]);
+
         $validated = $request->validate([
-            'auth_type' => 'required|string|in:password,telegram',
             'phone'     => 'required|string|max:20|unique:users,phone',
             'password'  => 'required|string|min:6',
             'fname'     => 'required|string|max:255',
@@ -83,8 +85,9 @@ class AuthController extends Controller
             'telegram'  => 'nullable|string|max:80',
             'region_id' => 'nullable|integer|exists:regions,id',
             'city_id'   => 'nullable|integer|exists:cities,id',
+        ], [
+            'phone.unique' => 'Bunday nomer mavjud.',
         ]);
-
         // Hozircha ikkala auth_type uchun ham bir xil ishlaydi
         $validated['role'] = User::ROLE_USER;
         $user = User::create($validated);

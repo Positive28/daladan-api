@@ -19,7 +19,6 @@ class Ad extends Model implements HasMedia
         'description',
         'price',
         'quantity',
-        'quantity_description',
         'unit',
         'delivery_info',
         'status',

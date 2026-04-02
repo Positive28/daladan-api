@@ -15,13 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('ad_id')->unique();
             $table->foreign('ad_id')->references('id')->on('ads')->cascadeOnDelete();
-            $table->smallInteger('age_months')->nullable();
-            $table->decimal('weight_kg', 6, 1)->nullable();
-            $table->string('breed', 80)->nullable();
-            $table->enum('purpose', ['meat', 'milk', 'breeding', 'work']);
-            $table->enum('health', ['healthy', 'vaccinated', 'treating']);
-            $table->decimal('milk_per_day_l', 5, 1)->nullable();
-            $table->boolean('is_pregnant')->nullable();
+            $table->string('title', 150);
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

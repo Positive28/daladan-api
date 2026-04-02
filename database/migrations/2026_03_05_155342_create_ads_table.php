@@ -20,13 +20,6 @@ return new class extends Migration
             $table->foreignId('city_id')->nullable()->constrained('cities')->nullOnDelete();
             
             $table->string('district', 100)->nullable();
-            $table->string('title', 150);
-            $table->text('description')->nullable();
-            $table->decimal('price', 12, 2);
-            $table->decimal('quantity', 10, 2);
-            $table->string('quantity_description', 50)->nullable();
-            $table->string('unit', 30);
-            $table->string('delivery_info', 255)->nullable();
 
             $table->string('status', 20)->default('active');
             $table->boolean('is_top_sale')->default(false);
