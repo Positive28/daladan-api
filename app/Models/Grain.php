@@ -13,5 +13,9 @@ class Grain extends Model
         'ad_id',
         'title',
         'description',
+        'grain_type',
+        'variety',
+        'unit',
+        'price',
     ];
 }

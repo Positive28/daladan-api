@@ -18,7 +18,12 @@ use OpenApi\Annotations as OA;
  *
  * @OA\Server(
  *     url="http://daladan-api.loc/api/v1",
- *     description="Local dev server"
+ *     description="Local dev server (OSPanel / virtual host)"
+ * )
+ *
+ * @OA\Server(
+ *     url="http://localhost:8000/api/v1",
+ *     description="php artisan serve"
  * )
  *
  * @OA\SecurityScheme(

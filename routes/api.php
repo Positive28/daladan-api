@@ -1,8 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AdController;
+use App\Http\Controllers\Api\AdsController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\Admin\CategoryController;
@@ -25,6 +26,11 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
         Route::get('/subcategories', 'subcategories');
     });
 
+    Route::prefix('public')->controller(PublicController::class)->group(function () {
+        Route::get('/ads', 'ads');
+        Route::get('/ads/{id}', 'ad');
+    });
+
     Route::middleware('auth:api')->group(function () {
         
         Route::prefix('profile')->group(function () {
@@ -32,10 +38,9 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
             Route::put('/', [UserController::class, 'updateProfile']);
             Route::post('/avatar', [UserController::class, 'updateAvatar']);
             Route::put('/password', [UserController::class, 'updatePassword']);
-            // Profil sahifasidan e'lon qo'shish
-            Route::post('/ads', [AdController::class, 'store']);
+
+            Route::apiResource('ads', AdsController::class);
         });
-        Route::apiResource('/ads', AdController::class);
 
         Route::prefix('admin')->group(function () {
             Route::apiResource('categories', CategoryController::class);

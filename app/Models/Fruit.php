@@ -13,5 +13,9 @@ class Fruit extends Model
         'ad_id',
         'title',
         'description',
+        'quantity',
+        'unit',
+        'price',
+        'is_negotiable',
     ];
 }

@@ -8,17 +8,23 @@
     "servers": [
         {
             "url": "http://daladan-api.loc/api/v1",
-            "description": "Local dev server"
+            "description": "Local dev server (OSPanel / virtual host)"
+        },
+        {
+            "url": "http://localhost:8000/api/v1",
+            "description": "php artisan serve"
         }
     ],
     "paths": {
-        "/ads": {
+        "/profile/ads": {
             "get": {
                 "tags": [
+                    "Profile",
                     "Ads"
                 ],
-                "summary": "Foydalanuvchining e'lonlari ro'yxati",
-                "operationId": "0687733bcc5e61deb4c3758eb8a92b74",
+                "summary": "O'z reklamalari ro'yxati",
+                "description": "apiResource: faqat JWT dagi user (seller_id) rekalalari, pagination.",
+                "operationId": "profileAdsIndex",
                 "parameters": [
                     {
                         "name": "per_page",
@@ -44,14 +50,14 @@
                         "bearerAuth": []
                     }
                 ]
-            }
-        },
-        "/profile/ads": {
+            },
             "post": {
                 "tags": [
+                    "Profile",
                     "Ads"
                 ],
-                "summary": "Profil sahifasidan e'lon yaratish",
+                "summary": "Yangi reklama yaratish (profil)",
+                "description": "ads jadvaliga category_id/subcategory_id/district yoziladi; kategoriya slug bo'yicha detail animals/poultries/... jadvaliga title va boshqalar ketadi.",
                 "operationId": "db1c9c5dd9d4fef529068d99d6edc72a",
                 "requestBody": {
                     "required": true,
@@ -60,53 +66,84 @@
                             "schema": {
                                 "required": [
                                     "category_id",
-                                    "subcategory_id",
-                                    "title",
-                                    "price",
-                                    "quantity"
+                                    "subcategory_id"
                                 ],
                                 "properties": {
                                     "category_id": {
+                                        "description": "Kategoriya ID",
                                         "type": "integer",
                                         "example": 1
                                     },
                                     "subcategory_id": {
+                                        "description": "Shu kategoriyaga tegishli subkategoriya ID",
                                         "type": "integer",
-                                        "example": 10
+                                        "example": 1
                                     },
                                     "district": {
                                         "type": "string",
+                                        "maxLength": 100,
                                         "nullable": true
                                     },
                                     "title": {
+                                        "description": "chorva, parranda, don, meva, yem, sabzavot — detail uchun",
                                         "type": "string",
-                                        "example": "Olma sotiladi"
+                                        "example": "Qo'y sotiladi"
                                     },
                                     "description": {
                                         "type": "string",
                                         "nullable": true
                                     },
                                     "price": {
-                                        "type": "number",
-                                        "example": 15000
+                                        "description": "chorva (nullable), don, meva, yem, sabzavot — detail",
+                                        "type": "number"
                                     },
                                     "quantity": {
-                                        "type": "number",
-                                        "example": 100
-                                    },
-                                    "quantity_description": {
-                                        "type": "string",
-                                        "nullable": true
+                                        "description": "meva, sabzavot",
+                                        "type": "number"
                                     },
                                     "unit": {
+                                        "description": "don: kg|ton|bag; meva/sabzavot: kg|ton|box|piece",
                                         "type": "string",
                                         "example": "kg"
                                     },
-                                    "delivery_info": {
+                                    "poultry_type": {
                                         "type": "string",
+                                        "maxLength": 100
+                                    },
+                                    "breed": {
+                                        "type": "string",
+                                        "maxLength": 100,
                                         "nullable": true
                                     },
+                                    "price_per_head": {
+                                        "description": "parranda",
+                                        "type": "number"
+                                    },
+                                    "grain_type": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "nullable": true
+                                    },
+                                    "variety": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "nullable": true
+                                    },
+                                    "forage_type": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "nullable": true
+                                    },
+                                    "vegetable_type": {
+                                        "type": "string",
+                                        "maxLength": 100
+                                    },
+                                    "is_negotiable": {
+                                        "description": "meva",
+                                        "type": "boolean"
+                                    },
                                     "media[]": {
+                                        "description": "Rasm/video fayllar",
                                         "type": "array",
                                         "items": {
                                             "type": "string",
@@ -137,16 +174,18 @@
                 ]
             }
         },
-        "/ads/{id}": {
+        "/profile/ads/{ad}": {
             "get": {
                 "tags": [
+                    "Profile",
                     "Ads"
                 ],
-                "summary": "Bitta e'lonni olish",
-                "operationId": "f3f3817a923e7099b2539b6d3d77c742",
+                "summary": "Bitta o'z reklamasini olish",
+                "description": "Yo'l parametri `ad` = e'lon primary key (apiResource bo'yicha nom).",
+                "operationId": "profileAdsShow",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "ad",
                         "in": "path",
                         "description": "E'lon ID",
                         "required": true,
@@ -175,14 +214,16 @@
             },
             "put": {
                 "tags": [
+                    "Profile",
                     "Ads"
                 ],
-                "summary": "E'lonni yangilash (JSON yoki form-data, faylsiz holat)",
-                "operationId": "32274e4f232597b3e811519e8cf262be",
+                "summary": "Reklamani yangilash (JSON)",
+                "operationId": "profileAdsPut",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "ad",
                         "in": "path",
+                        "description": "E'lon ID",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -196,17 +237,172 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "title": {
+                                    "category_id": {
+                                        "type": "integer"
+                                    },
+                                    "subcategory_id": {
+                                        "type": "integer"
+                                    },
+                                    "district": {
                                         "type": "string",
-                                        "example": "Yangi sarlavha"
+                                        "nullable": true
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
                                     },
                                     "price": {
-                                        "type": "number",
-                                        "example": 16000
+                                        "type": "number"
                                     },
                                     "quantity": {
-                                        "type": "number",
-                                        "example": 80
+                                        "type": "number"
+                                    },
+                                    "unit": {
+                                        "type": "string"
+                                    },
+                                    "poultry_type": {
+                                        "type": "string"
+                                    },
+                                    "breed": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "price_per_head": {
+                                        "type": "number"
+                                    },
+                                    "grain_type": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "variety": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "forage_type": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "vegetable_type": {
+                                        "type": "string"
+                                    },
+                                    "is_negotiable": {
+                                        "type": "boolean"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "sold",
+                                            "deleted"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "E'lon yangilandi"
+                    },
+                    "404": {
+                        "description": "E'lon topilmadi"
+                    },
+                    "422": {
+                        "description": "Validatsiya xatosi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Profile",
+                    "Ads"
+                ],
+                "summary": "Reklamani qisman yangilash (PATCH)",
+                "operationId": "profileAdsPatch",
+                "parameters": [
+                    {
+                        "name": "ad",
+                        "in": "path",
+                        "description": "E'lon ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "category_id": {
+                                        "type": "integer"
+                                    },
+                                    "subcategory_id": {
+                                        "type": "integer"
+                                    },
+                                    "district": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "price": {
+                                        "type": "number"
+                                    },
+                                    "quantity": {
+                                        "type": "number"
+                                    },
+                                    "unit": {
+                                        "type": "string"
+                                    },
+                                    "poultry_type": {
+                                        "type": "string"
+                                    },
+                                    "breed": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "price_per_head": {
+                                        "type": "number"
+                                    },
+                                    "grain_type": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "variety": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "forage_type": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "vegetable_type": {
+                                        "type": "string"
+                                    },
+                                    "is_negotiable": {
+                                        "type": "boolean"
                                     },
                                     "status": {
                                         "type": "string",
@@ -244,13 +440,14 @@
             },
             "post": {
                 "tags": [
+                    "Profile",
                     "Ads"
                 ],
-                "summary": "E'lonni yangilash (method spoofing: _method=PUT)",
-                "operationId": "ecf790857b2c6b212b91f4d0c16b3c4c",
+                "summary": "Reklamani yangilash (form-data, _method=PUT)",
+                "operationId": "profileAdsPostPut",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "ad",
                         "in": "path",
                         "description": "E'lon ID",
                         "required": true,
@@ -283,32 +480,48 @@
                                         "nullable": true
                                     },
                                     "title": {
-                                        "type": "string",
-                                        "example": "Yangi sarlavha"
+                                        "type": "string"
                                     },
                                     "description": {
                                         "type": "string",
                                         "nullable": true
                                     },
                                     "price": {
-                                        "type": "number",
-                                        "example": 16000
+                                        "type": "number"
                                     },
                                     "quantity": {
-                                        "type": "number",
-                                        "example": 80
-                                    },
-                                    "quantity_description": {
-                                        "type": "string",
-                                        "nullable": true
+                                        "type": "number"
                                     },
                                     "unit": {
-                                        "type": "string",
-                                        "example": "kg"
+                                        "type": "string"
                                     },
-                                    "delivery_info": {
+                                    "poultry_type": {
+                                        "type": "string"
+                                    },
+                                    "breed": {
                                         "type": "string",
                                         "nullable": true
+                                    },
+                                    "price_per_head": {
+                                        "type": "number"
+                                    },
+                                    "grain_type": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "variety": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "forage_type": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "vegetable_type": {
+                                        "type": "string"
+                                    },
+                                    "is_negotiable": {
+                                        "type": "boolean"
                                     },
                                     "status": {
                                         "type": "string",
@@ -360,13 +573,14 @@
             },
             "delete": {
                 "tags": [
+                    "Profile",
                     "Ads"
                 ],
-                "summary": "E'lonni o'chirish",
-                "operationId": "1565fc5db45006f8c1044cf26db8b241",
+                "summary": "O'z reklamasini o'chirish",
+                "operationId": "profileAdsDestroy",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "ad",
                         "in": "path",
                         "description": "E'lon ID",
                         "required": true,
@@ -589,6 +803,71 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/public/ads": {
+            "get": {
+                "tags": [
+                    "Public"
+                ],
+                "summary": "Barcha faol e'lonlar ro'yxati",
+                "operationId": "62118c3b7d8509cb90cf762711c09227",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "subcategory_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginatsiyali e'lonlar (category, subcategory, seller, animal va h.k.)"
+                    }
+                }
+            }
+        },
+        "/public/ads/{id}": {
+            "get": {
+                "tags": [
+                    "Public"
+                ],
+                "summary": "Bitta faol e'lon",
+                "operationId": "8af863f0a3b40102f777e155bc0ede65",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "E'lon obyekti"
+                    },
+                    "404": {
+                        "description": "Topilmadi yoki faol emas"
+                    }
+                }
             }
         },
         "/resources/regions": {
@@ -858,6 +1137,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Public",
+            "description": "Front uchun ochiq (tokensiz) endpointlar"
+        },
         {
             "name": "Resources",
             "description": "Viloyat va tumanlar resurslari"

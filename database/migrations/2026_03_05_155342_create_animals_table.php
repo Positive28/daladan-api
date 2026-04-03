@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreign('ad_id')->references('id')->on('ads')->cascadeOnDelete();
             $table->string('title', 150);
             $table->text('description')->nullable();
+            $table->unsignedBigInteger('price')->nullable();
             $table->timestamps();
         });
     }

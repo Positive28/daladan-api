@@ -13,5 +13,7 @@ class Forage extends Model
         'ad_id',
         'title',
         'description',
+        'forage_type',
+        'price',
     ];
 }

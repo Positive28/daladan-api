@@ -17,6 +17,12 @@ return new class extends Migration
             $table->foreign('ad_id')->references('id')->on('ads')->cascadeOnDelete();
             $table->string('title', 150);
             $table->text('description')->nullable();
+            // Miqdor va o'lchov
+            $table->decimal('quantity', 10, 2);               // mavjud miqdor
+            $table->enum('unit', ['kg', 'ton', 'box', 'piece'])->default('kg');
+            // Narx
+            $table->unsignedBigInteger('price');               // 1 kg/dona narxi
+            $table->boolean('is_negotiable')->default(false);  // muzokarali
             $table->timestamps();
         });
     }

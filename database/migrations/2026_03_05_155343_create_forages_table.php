@@ -17,6 +17,9 @@ return new class extends Migration
             $table->foreign('ad_id')->references('id')->on('ads')->cascadeOnDelete();
             $table->string('title', 150);
             $table->text('description')->nullable();
+            // Tur va navi
+            $table->string('forage_type', 100)->nullable();               // beda, somon, silos, kombishem...
+            $table->unsignedBigInteger('price');
             $table->timestamps();
         });
     }

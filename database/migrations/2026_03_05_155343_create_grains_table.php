@@ -17,6 +17,12 @@ return new class extends Migration
             $table->foreign('ad_id')->references('id')->on('ads')->cascadeOnDelete();
             $table->string('title', 150);
             $table->text('description')->nullable();
+            // Tur va navi
+            $table->string('grain_type', 100)->nullable();               // bug'doy, sholi, makkajo'xori, arpa...
+            $table->string('variety', 100)->nullable();       // navi: Krasnodarskiy, Basmati...
+            // Miqdor va o'lchov
+            $table->enum('unit', ['kg', 'ton', 'bag'])->default('ton'); // xalta, kg, tonna
+            $table->unsignedBigInteger('price');               // 1 kg/dona narxi
             $table->timestamps();
         });
     }

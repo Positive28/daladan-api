@@ -14,13 +14,9 @@ class Ad extends Model implements HasMedia
         'seller_id',
         'category_id',
         'subcategory_id',
+        'region_id',
+        'city_id',
         'district',
-        'title',
-        'description',
-        'price',
-        'quantity',
-        'unit',
-        'delivery_info',
         'status',
         'is_top_sale',
         'is_boosted',
@@ -32,8 +28,6 @@ class Ad extends Model implements HasMedia
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
-            'quantity' => 'decimal:2',
             'is_top_sale' => 'boolean',
             'is_boosted' => 'boolean',
             'boost_expires_at' => 'datetime',

@@ -13,5 +13,10 @@ class Vegetable extends Model
         'ad_id',
         'title',
         'description',
+        'vegetable_type',
+        'variety',
+        'quantity',
+        'unit',
+        'price',
     ];
 }

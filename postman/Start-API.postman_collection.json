@@ -1,0 +1,398 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-start-api-v1",
+		"name": "Start API (AgroBozor)",
+		"description": "## Postman da testlash\n\n### 1. O'zgaruvchilar (Variables)\nCollection ustiga o'ng tugma → **Edit** → **Variables** yoki asosiy sahifada **Variables**.\n- **baseUrl**: API manzili, oxirida `/api/v1` bo'lsin.\n  - OSPanel/virtual host: `http://SIZNING-DOMEN/api/v1`\n  - `php artisan serve`: `http://127.0.0.1:8000/api/v1`\n- **token**: boshida bo'sh. Login dan keyin to'ldirasiz.\n\n### 2. Token olish tartibi\n1. **Auth → Login** so'rovini yuboring (telefon va parol to'g'ri bo'lsin).\n2. Javob JSON ichidan `access_token` (yoki loyihadagi token maydoni nomi) ni ko'ring.\n3. **token** o'zgaruvchiga nusxa qiling (Collection yoki Environment).\n4. JWT talab qilinadigan so'rovlar (Ads papkasi) endi ishlaydi.\n\n### 3. Tokensiz endpointlar\n**Public** va **Resources** papkalarida **Authorization: No Auth** — alohida token shart emas.\n- Public: barcha faol e'lonlar, bitta e'lon.\n- Resources: viloyat, tuman, kategoriya, subkategoriya.\n\n### 4. O'z rekalalari CRUD (JWT)\nBarcha amallar **`/profile/ads`** ostida (`apiResource`), alohida `/ads` yo'q.\n- **GET** `/profile/ads` — ro'yxat\n- **POST** `/profile/ads` — yaratish (form-data tavsiya)\n- **GET** `/profile/ads/1` — bitta (URLda `1` = e'lon ID; Laravel yo'l nomi `ad`)\n- **PUT** yoki **PATCH** `/profile/ads/1` — yangilash\n- **DELETE** `/profile/ads/1` — o'chirish\nProfilda **region_id** va **city_id** bo'lmasa POST 422 beradi.\n\n### 5. Kutiladigan kodlar\n- **200** — muvaffaqiyatli GET.\n- **201** — yaratildi (POST profile/ads).\n- **401** — token yo'q/noto'g'ri.\n- **404** — resurs topilmadi.\n- **422** — validatsiya yoki profil manzili to'liq emas.\n\n### 6. Sarlavhalar\nHar so'rovda: **Accept: application/json** (kolleksiyada qo'yilgan).\nJSON yuborishda: **Content-Type: application/json**.\n\n### Swagger\nBrauzer: `{sayt}/api/documentation`. Yangilash: `composer run swagger` yoki `php artisan l5-swagger:generate`.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://daladan-api.loc/api/v1"
+		},
+		{
+			"key": "token",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"+998901234567\",\n  \"password\": \"parol123\"\n}"
+						},
+						"url": "{{baseUrl}}/login",
+						"description": "Javobdan `access_token` ni oling va Collection yoki Environment da `token` ga yozing."
+					}
+				},
+				{
+					"name": "Register (password)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"+998901111111\",\n  \"password\": \"parol123\",\n  \"fname\": \"Ism\",\n  \"lname\": \"Familiya\",\n  \"region_id\": 1,\n  \"city_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/register?auth_type=password",
+							"host": ["{{baseUrl}}"],
+							"path": ["register"],
+							"query": [
+								{
+									"key": "auth_type",
+									"value": "password"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Public (tokensiz)",
+			"item": [
+				{
+					"name": "Barcha faol e'lonlar",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/public/ads?per_page=15",
+							"host": ["{{baseUrl}}"],
+							"path": ["public", "ads"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15"
+								},
+								{
+									"key": "category_id",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "subcategory_id",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Bitta e'lon (id)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": "{{baseUrl}}/public/ads/1"
+					}
+				}
+			]
+		},
+		{
+			"name": "Resources",
+			"item": [
+				{
+					"name": "Categories",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": "{{baseUrl}}/resources/categories"
+					}
+				},
+				{
+					"name": "Subcategories",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/resources/subcategories?category_id=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["resources", "subcategories"],
+							"query": [
+								{
+									"key": "category_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Regions",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": "{{baseUrl}}/resources/regions"
+					}
+				},
+				{
+					"name": "Cities",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/resources/cities?region_id=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["resources", "cities"],
+							"query": [
+								{
+									"key": "region_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile ads CRUD (JWT)",
+			"item": [
+				{
+					"name": "Profil: o'z e'lonlari (ro'yxat)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/profile/ads?per_page=15",
+							"host": ["{{baseUrl}}"],
+							"path": ["profile", "ads"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15"
+								}
+							]
+						},
+						"description": "CRUD ro'yxat: faqat o'z reklamalaringiz (seller_id = token)."
+					}
+				},
+				{
+					"name": "Profil: bitta e'lon",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": "{{baseUrl}}/profile/ads/1",
+						"description": "Faqat o'z e'longiz bo'lsa 200."
+					}
+				},
+				{
+					"name": "E'lon yaratish (Chorva — form-data)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "category_id",
+									"value": "1",
+									"type": "text",
+									"description": "Chorva hayvonlari kategoriyasi ID (DB bo'yicha)"
+								},
+								{
+									"key": "subcategory_id",
+									"value": "1",
+									"type": "text",
+									"description": "Shu categoryga tegishli subcategory"
+								},
+								{
+									"key": "district",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "title",
+									"value": "Qo'y sotiladi",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Sog'lom",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "2500000",
+									"type": "text"
+								},
+								{
+									"key": "media[]",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": "{{baseUrl}}/profile/ads",
+						"description": "Kategoriya bo'yicha boshqa maydonlar: Swagger `POST /profile/ads` qarang."
+					}
+				},
+				{
+					"name": "Reklamani yangilash (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"active\"\n}"
+						},
+						"url": "{{baseUrl}}/profile/ads/1",
+						"description": "Swagger: PUT /profile/ads/{ad}. `1` o'rniga o'z e'lon ID."
+					}
+				},
+				{
+					"name": "Reklamani yangilash (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"sold\"\n}"
+						},
+						"url": "{{baseUrl}}/profile/ads/1",
+						"description": "apiResource PATCH — PUT bilan bir xil controller."
+					}
+				},
+				{
+					"name": "Reklamani o'chirish (DELETE)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": "{{baseUrl}}/profile/ads/1"
+					}
+				}
+			]
+		}
+	]
+}

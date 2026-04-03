@@ -13,5 +13,8 @@ class Poultry extends Model
         'ad_id',
         'title',
         'description',
+        'poultry_type',
+        'breed',
+        'price_per_head',
     ];
 }

@@ -14,6 +14,7 @@ class Animal extends Model
         'ad_id',
         'title',
         'description',
+        'price',
     ];
 
     public function registerMediaCollections(): void
