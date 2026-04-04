@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('ads', function (Blueprint $table) {
@@ -18,10 +15,17 @@ return new class extends Migration
             $table->foreignId('subcategory_id')->constrained('subcategories')->restrictOnDelete();
             $table->foreignId('region_id')->nullable()->constrained('regions')->nullOnDelete();
             $table->foreignId('city_id')->nullable()->constrained('cities')->nullOnDelete();
-            
-            $table->string('district', 100)->nullable();
 
-            $table->string('status', 20)->default('active');
+            $table->string('title', 150);
+            $table->text('description')->nullable();
+            $table->string('district', 100)->nullable();
+            $table->unsignedBigInteger('price')->nullable();
+
+            // Umumiy detail
+            $table->decimal('quantity', 10, 2)->nullable();
+            $table->string('unit', 20)->nullable(); // kg, ton, bag, box, piece
+
+            $table->string('status', 20)->default('active'); // active, sold, deleted
             $table->boolean('is_top_sale')->default(false);
             $table->boolean('is_boosted')->default(false);
             $table->timestamp('boost_expires_at')->nullable();
@@ -32,9 +36,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('ads');

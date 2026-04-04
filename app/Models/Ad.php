@@ -16,7 +16,12 @@ class Ad extends Model implements HasMedia
         'subcategory_id',
         'region_id',
         'city_id',
+        'title',
+        'description',
         'district',
+        'price',
+        'quantity',
+        'unit',
         'status',
         'is_top_sale',
         'is_boosted',
@@ -28,12 +33,15 @@ class Ad extends Model implements HasMedia
     protected function casts(): array
     {
         return [
-            'is_top_sale' => 'boolean',
-            'is_boosted' => 'boolean',
+            'is_top_sale'      => 'boolean',
+            'is_boosted'       => 'boolean',
+            'quantity'         => 'decimal:2',
             'boost_expires_at' => 'datetime',
-            'expires_at' => 'datetime',
+            'expires_at'       => 'datetime',
         ];
     }
+
+    // -------------------------------------------------------------------------
 
     public function seller()
     {
@@ -50,16 +58,17 @@ class Ad extends Model implements HasMedia
         return $this->belongsTo(Subcategory::class);
     }
 
-    /** E'lon manzili = sotuvchi (user) manzili */
-    public function getRegionIdAttribute(): ?int
+    public function favoritedByUsers()
     {
-        return $this->seller?->region_id;
+        return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
     }
 
-    public function getCityIdAttribute(): ?int
+    public function adPromotions()
     {
-        return $this->seller?->city_id;
+        return $this->hasMany(AdPromotion::class);
     }
+
+    // -------------------------------------------------------------------------
 
     public function getRegionAttribute(): ?Region
     {
@@ -71,52 +80,13 @@ class Ad extends Model implements HasMedia
         return $this->seller?->city;
     }
 
-    public function favoritedByUsers()
-    {
-        return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
-    }
-
-    public function adPromotions()
-    {
-        return $this->hasMany(AdPromotion::class);
-    }
-
-    public function animal()
-    {
-        return $this->hasOne(Animal::class);
-    }
-
-    public function poultry()
-    {
-        return $this->hasOne(Poultry::class);
-    }
-
-    public function grain()
-    {
-        return $this->hasOne(Grain::class);
-    }
-
-    public function fruit()
-    {
-        return $this->hasOne(Fruit::class);
-    }
-
-    public function forage()
-    {
-        return $this->hasOne(Forage::class);
-    }
-
-    public function vegetable()
-    {
-        return $this->hasOne(Vegetable::class);
-    }
+    // -------------------------------------------------------------------------
 
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('gallery'); // rasm va videolar
+        $this->addMediaCollection('gallery');
     }
 
-    /** API uchun: gallery (rasm/video) ro'yxati — to'liq URL */
     public function getMediaListAttribute(): array
     {
         return $this->getMedia('gallery')->map(fn ($m) => [
