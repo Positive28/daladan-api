@@ -37,12 +37,12 @@ class PublicController extends Controller
         $perPage = min(max((int) $request->input('per_page', 15), 1), 50);
         $ads = $query->orderByDesc('created_at')->paginate($perPage);
 
-        return $this->publicSuccessJson($ads);
+        return response()->successJson($ads);
     }
 
     public function ad(string $id): JsonResponse
     {
-        $ad = Ad::with(['category', 'subcategory', 'seller.region', 'seller.city'])
+        $ad = Ad::with(['category:id,name', 'subcategory:id,name', 'seller.region', 'seller.city'])
             ->where('id', $id)
             ->where('status', 'active')
             ->first();
@@ -51,16 +51,7 @@ class PublicController extends Controller
             return response()->errorJson('E\'lon topilmadi yoki faol emas.', 404);
         }
 
-        return $this->publicSuccessJson($ad);
-    }
-
-    private function publicSuccessJson(mixed $data): JsonResponse
-    {
-        return response()->json([
-            'success' => true,
-            'data'    => $data,
-            'message' => 'ok',
-        ]);
+        return response()->successJson($ad);
     }
 
     // =========================================================================

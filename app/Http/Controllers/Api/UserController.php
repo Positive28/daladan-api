@@ -23,7 +23,7 @@ class UserController extends Controller
         $user->load(['region', 'city']);
         $user->load([
             'ads' => fn ($q) => $q
-                ->with(['category', 'subcategory', 'seller.region', 'seller.city'])
+                ->with(['category:id,name', 'subcategory:id,name'])
                 ->orderByDesc('created_at')
                 ->limit(10),
         ]);

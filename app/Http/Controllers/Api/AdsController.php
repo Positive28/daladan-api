@@ -15,11 +15,17 @@ class AdsController extends Controller
     {
         $perPage = min(max((int) $request->input('per_page', 15), 1), 50);
 
-        $ads = $request->user()
+        $seller = $request->user()->load(['region', 'city']);
+
+        $ads = $seller
             ->ads()
-            ->with(['category', 'subcategory', 'seller.region', 'seller.city'])
+            ->with(['category:id,name', 'subcategory:id,name'])
             ->orderByDesc('created_at')
             ->paginate($perPage);
+
+        $ads->getCollection()->each(
+            fn ($ad) => $ad->setRelation('seller', $seller)
+        );
 
         return response()->successJson($ads);
     }
@@ -65,21 +71,27 @@ class AdsController extends Controller
             }
         }
 
-        $ad->load(['category', 'subcategory', 'seller.region', 'seller.city']);
+        $seller = $user->load(['region', 'city']);
+        $ad->load(['category:id,name', 'subcategory:id,name']);
+        $ad->setRelation('seller', $seller);
 
         return response()->successJson($ad, 201);
     }
 
     public function show(Request $request, string $ad): JsonResponse
     {
-        $model = Ad::with(['category', 'subcategory', 'seller.region', 'seller.city'])
+        $seller = $request->user()->load(['region', 'city']);
+
+        $model = Ad::with(['category:id,name', 'subcategory:id,name'])
             ->where('id', $ad)
-            ->where('seller_id', $request->user()->id)
+            ->where('seller_id', $seller->id)
             ->first();
 
         if (!$model) {
             return response()->errorJson('E\'lon topilmadi.', 404);
         }
+
+        $model->setRelation('seller', $seller);
 
         return response()->successJson($model);
     }
@@ -140,9 +152,11 @@ class AdsController extends Controller
             }
         }
 
-        return response()->successJson(
-            $record->fresh(['category', 'subcategory', 'seller.region', 'seller.city'])
-        );
+        $seller = $request->user()->load(['region', 'city']);
+        $record->refresh()->load(['category:id,name', 'subcategory:id,name']);
+        $record->setRelation('seller', $seller);
+
+        return response()->successJson($record);
     }
 
     public function destroy(Request $request, string $ad): JsonResponse

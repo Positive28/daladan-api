@@ -7,7 +7,6 @@ use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\Admin\CategoryController;
-use Illuminate\Http\Request;
 
 Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
 

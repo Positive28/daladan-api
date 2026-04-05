@@ -28,6 +28,7 @@ class User extends Authenticatable implements JWTSubject, HasMedia
         'lname',
         'phone',
         'telegram',
+        'telegram_id',
         'region_id',
         'city_id',
         'role',

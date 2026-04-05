@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use OpenApi\Annotations as OA;
 
 /**
@@ -15,6 +14,7 @@ use OpenApi\Annotations as OA;
  *     version="1.0.0",
  *     description="AgroBozor uchun backend API"
  * )
+ * @OA\Server(url="https://daladan.uz/api/v1",       description="Production server")
  * @OA\Server(url="http://daladan-api.loc/api/v1",  description="Local dev server (OSPanel)")
  * @OA\Server(url="http://localhost:8000/api/v1",   description="php artisan serve")
  * @OA\SecurityScheme(
@@ -35,10 +35,11 @@ class AuthController extends Controller
             'password'  => 'required|string|min:6',
             'fname'     => 'required|string|max:255',
             'lname'     => 'required|string|max:255',
-            'email'     => 'nullable|email|unique:users,email',
-            'telegram'  => 'nullable|string|max:80',
-            'region_id' => 'nullable|integer|exists:regions,id',
-            'city_id'   => 'nullable|integer|exists:cities,id',
+            'email'       => 'nullable|email|unique:users,email',
+            'telegram'    => 'nullable|string|max:80',
+            'telegram_id' => 'nullable|integer|unique:users,telegram_id',
+            'region_id'   => 'nullable|integer|exists:regions,id',
+            'city_id'     => 'nullable|integer|exists:cities,id',
         ], [
             'phone.unique' => 'Bunday nomer mavjud.',
         ]);
@@ -134,8 +135,9 @@ class AuthController extends Controller
      *             @OA\Property(property="lname",     type="string",  example="Familiya"),
      *             @OA\Property(property="region_id", type="integer", example=1),
      *             @OA\Property(property="city_id",   type="integer", example=10),
-     *             @OA\Property(property="email",     type="string",  nullable=true),
-     *             @OA\Property(property="telegram",  type="string",  nullable=true)
+     *             @OA\Property(property="email",       type="string",  nullable=true),
+     *             @OA\Property(property="telegram",    type="string",  nullable=true),
+     *             @OA\Property(property="telegram_id", type="integer", nullable=true)
      *         )
      *     ),
      *     @OA\Response(response=201, description="Muvaffaqiyatli ro'yxatdan o'tdi, token qaytdi"),
