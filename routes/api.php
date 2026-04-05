@@ -39,6 +39,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
             Route::post('/avatar', [UserController::class, 'updateAvatar']);
             Route::put('/password', [UserController::class, 'updatePassword']);
 
+            Route::post('ads/{ad}', [AdsController::class, 'update']); // form-data + fayl uchun
             Route::apiResource('ads', AdsController::class);
         });
 

@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Ad;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use OpenApi\Annotations as OA;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use OpenApi\Annotations as OA;
 
 /**
  * @OA\Tag(
@@ -18,24 +17,10 @@ use Illuminate\Support\Facades\Storage;
  */
 class UserController extends Controller
 {
-    /**
-     * @OA\Get(
-     *     path="/profile",
-     *     tags={"Profile"},
-     *     summary="O'zi haqida ma'lumot",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Profile ma'lumotlari"),
-     *     @OA\Response(response=401, description="Unauthorized")
-     * )
-     */
-    // Profilni ko'rish
     public function profile(): JsonResponse
     {
         $user = auth('api')->user();
         $user->load(['region', 'city']);
-
-        // Profilda foydalanuvchining e'lonlari ham ko'rinsin.
-        // Odatiy UX: bu yerda faqat bir nechta eng oxirgi e'lonni ko'rsatamiz.
         $user->load([
             'ads' => fn ($q) => $q
                 ->with(['category', 'subcategory', 'seller.region', 'seller.city'])
@@ -45,35 +30,11 @@ class UserController extends Controller
 
         return response()->json($user);
     }
-    
-    /**
-     * @OA\Put(
-     *     path="/profile",
-     *     tags={"Profile"},
-     *     summary="Profilni yangilash",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="fname", type="string", nullable=true),
-     *             @OA\Property(property="lname", type="string", nullable=true),
-     *             @OA\Property(property="email", type="string", nullable=true),
-     *             @OA\Property(property="telegram", type="string", nullable=true),
-     *             @OA\Property(property="region_id", type="integer", nullable=true),
-     *             @OA\Property(property="city_id", type="integer", nullable=true)
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Profil yangilandi"),
-     *     @OA\Response(response=401, description="Unauthorized"),
-     *     @OA\Response(response=422, description="Validatsiya xatosi")
-     * )
-     */
-    // Profilni tahrirlash
+
     public function updateProfile(Request $request): JsonResponse
     {
         $user = auth('api')->user();
-    
+
         $validated = $request->validate([
             'fname'     => 'sometimes|string|max:255',
             'lname'     => 'sometimes|string|max:255',
@@ -82,28 +43,98 @@ class UserController extends Controller
             'region_id' => 'sometimes|nullable|integer|exists:regions,id',
             'city_id'   => 'sometimes|nullable|integer|exists:cities,id',
         ]);
-    
+
         $user->update($validated);
         $user->load(['region', 'city']);
-    
+
+        return response()->json(['message' => 'Profil yangilandi', 'user' => $user]);
+    }
+
+    public function updateAvatar(Request $request): JsonResponse
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $user = auth('api')->user();
+
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        $path = $request->file('avatar')->store('avatars', 'public');
+        $user->update(['avatar' => $path]);
+
         return response()->json([
-            'message' => 'Profil yangilandi',
-            'user'    => $user,
+            'message'    => 'Avatar yangilandi',
+            'avatar_url' => Storage::url($path),
         ]);
     }
-    
-    /**
+
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password'     => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = auth('api')->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['message' => 'Hozirgi parol noto\'g\'ri'], 422);
+        }
+
+        $user->update(['password' => Hash::make($request->new_password)]);
+
+        return response()->json(['message' => 'Parol muvaffaqiyatli o\'zgartirildi']);
+    }
+
+    // =========================================================================
+    // Swagger / OpenAPI annotations
+    // =========================================================================
+
+    /** profile() — GET /profile
+     * @OA\Get(
+     *     path="/profile",
+     *     tags={"Profile"},
+     *     summary="O'zi haqida ma'lumot",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Profil ma'lumotlari"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+
+    /** updateProfile() — PUT /profile
+     * @OA\Put(
+     *     path="/profile",
+     *     tags={"Profile"},
+     *     summary="Profilni yangilash",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="fname",     type="string",  nullable=true),
+     *             @OA\Property(property="lname",     type="string",  nullable=true),
+     *             @OA\Property(property="email",     type="string",  nullable=true),
+     *             @OA\Property(property="telegram",  type="string",  nullable=true),
+     *             @OA\Property(property="region_id", type="integer", nullable=true),
+     *             @OA\Property(property="city_id",   type="integer", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Profil yangilandi"),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=422, description="Validatsiya xatosi")
+     * )
+     */
+
+    /** updateAvatar() — POST /profile/avatar
      * @OA\Post(
      *     path="/profile/avatar",
      *     tags={"Profile"},
      *     summary="Avatarni yangilash",
      *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\MediaType(
-     *             mediaType="multipart/form-data",
+     *     @OA\RequestBody(required=true,
+     *         @OA\MediaType(mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 type="object",
      *                 required={"avatar"},
      *                 @OA\Property(property="avatar", type="string", format="binary")
      *             )
@@ -114,72 +145,24 @@ class UserController extends Controller
      *     @OA\Response(response=422, description="Validatsiya xatosi")
      * )
      */
-    // Avatar yuklash
-    public function updateAvatar(Request $request): JsonResponse
-    {
-        $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
-    
-        $user = auth('api')->user();
-    
-        // Eski avatarni o'chirish
-        if ($user->avatar) {
-            Storage::disk('public')->delete($user->avatar);
-        }
-    
-        $path = $request->file('avatar')->store('avatars', 'public');
-        $user->update(['avatar' => $path]);
-    
-        return response()->json([
-            'message'    => 'Avatar yangilandi',
-            'avatar_url' => Storage::url($path),
-        ]);
-    }
-    
-    /**
+
+    /** updatePassword() — PUT /profile/password
      * @OA\Put(
      *     path="/profile/password",
      *     tags={"Profile"},
      *     summary="Parolni o'zgartirish",
      *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
+     *     @OA\RequestBody(required=true,
      *         @OA\JsonContent(
-     *             type="object",
      *             required={"current_password","new_password","new_password_confirmation"},
-     *             @OA\Property(property="current_password", type="string"),
-     *             @OA\Property(property="new_password", type="string"),
+     *             @OA\Property(property="current_password",          type="string"),
+     *             @OA\Property(property="new_password",              type="string"),
      *             @OA\Property(property="new_password_confirmation", type="string")
      *         )
      *     ),
      *     @OA\Response(response=200, description="Parol muvaffaqiyatli o'zgartirildi"),
      *     @OA\Response(response=401, description="Unauthorized"),
-     *     @OA\Response(response=422, description="Validatsiya/parol mos kelmadi")
+     *     @OA\Response(response=422, description="Validatsiya xatosi / parol mos kelmadi")
      * )
      */
-    // Parolni o'zgartirish
-    public function updatePassword(Request $request): JsonResponse
-    {
-        $request->validate([
-            'current_password' => 'required|string',
-            'new_password'     => 'required|string|min:6|confirmed',
-        ]);
-    
-        $user = auth('api')->user();
-    
-        if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json([
-                'message' => 'Hozirgi parol noto\'g\'ri',
-            ], 422);
-        }
-    
-        $user->update([
-            'password' => Hash::make($request->new_password),
-        ]);
-    
-        return response()->json([
-            'message' => 'Parol muvaffaqiyatli o\'zgartirildi',
-        ]);
-    }
 }

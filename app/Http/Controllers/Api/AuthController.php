@@ -15,17 +15,8 @@ use OpenApi\Annotations as OA;
  *     version="1.0.0",
  *     description="AgroBozor uchun backend API"
  * )
- *
- * @OA\Server(
- *     url="http://daladan-api.loc/api/v1",
- *     description="Local dev server (OSPanel / virtual host)"
- * )
- *
- * @OA\Server(
- *     url="http://localhost:8000/api/v1",
- *     description="php artisan serve"
- * )
- *
+ * @OA\Server(url="http://daladan-api.loc/api/v1",  description="Local dev server (OSPanel)")
+ * @OA\Server(url="http://localhost:8000/api/v1",   description="php artisan serve")
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",
  *     type="http",
@@ -33,52 +24,10 @@ use OpenApi\Annotations as OA;
  *     bearerFormat="JWT"
  * )
  */
-
 class AuthController extends Controller
 {
-    /**
-     * @OA\Post(
-     *     path="/register",
-     *     tags={"Auth"},
-     *     summary="Yangi foydalanuvchini ro'yxatdan o'tkazish (parol yoki telegram)",
-     *     @OA\Parameter(
-     *         name="auth_type",
-     *         in="query",
-     *         required=true,
-     *         description="Registratsiya turi: password yoki telegram",
-     *         @OA\Schema(
-     *             type="string",
-     *             enum={"password","telegram"},
-     *             default="password"
-     *         )
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"phone","password","fname","lname","region_id","city_id"},
-     *             @OA\Property(property="phone", type="string", example="+998901234567"),
-     *             @OA\Property(property="password", type="string", example="parol123"),
-     *             @OA\Property(property="fname", type="string", example="Ism"),
-     *             @OA\Property(property="lname", type="string", example="Familiya"),
-     *             @OA\Property(property="region_id", type="integer", example=1),
-     *             @OA\Property(property="city_id", type="integer", example=10),
-     *             @OA\Property(property="email", type="string", nullable=true, example="user@example.com"),
-     *             @OA\Property(property="telegram", type="string", nullable=true, example="@username")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Muvaffaqiyatli ro'yxatdan o'tdi, token qaytdi"
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validatsiya xatosi"
-     *     )
-     * )
-     */
     public function register(Request $request): JsonResponse
     {
-        // auth_type is taken from query string (Swagger lists it as query param).
         $request->merge(['auth_type' => $request->query('auth_type', 'password')]);
 
         $validated = $request->validate([
@@ -93,16 +42,13 @@ class AuthController extends Controller
         ], [
             'phone.unique' => 'Bunday nomer mavjud.',
         ]);
-        // Hozircha ikkala auth_type uchun ham bir xil ishlaydi
+
         $validated['role'] = User::ROLE_USER;
         $user = User::create($validated);
 
-        // Login the newly-created user directly to avoid credential re-check edge cases.
         $token = auth('api')->login($user);
         if (!$token) {
-            return response()->json([
-                'message' => 'Registration succeeded, but token creation failed.',
-            ], 500);
+            return response()->json(['message' => 'Registration succeeded, but token creation failed.'], 500);
         }
 
         $user->load(['region', 'city']);
@@ -115,34 +61,6 @@ class AuthController extends Controller
         ], 201);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/login",
-     *     tags={"Auth"},
-     *     summary="Telefon raqam va parol bilan login",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"phone","password"},
-     *             @OA\Property(property="phone", type="string", example="+998901234567"),
-     *             @OA\Property(property="password", type="string", example="parol123")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Muvaffaqiyatli login, JWT token qaytadi"
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Telefon raqam yoki parol noto'g'ri"
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validatsiya xatosi"
-     *     )
-     * )
-     */
-    
     public function login(Request $request): JsonResponse
     {
         $credentials = $request->validate([
@@ -157,59 +75,14 @@ class AuthController extends Controller
         return $this->respondWithToken($token);
     }
 
-    protected function respondWithToken($token)
-    {
-        $user = auth('api')->user();
-        $user->load(['region', 'city']);
-
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'user' => $user,
-        ]);
-    }
-
-     /**
-     * @OA\Post(
-     *     path="/logout",
-     *     tags={"Auth"},
-     *     summary="Tizimdan chiqish",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Muvaffaqiyatli logout"
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized"
-     *     )
-     * )
-     */
-
-    public function logout()
+    public function logout(): JsonResponse
     {
         auth('api')->logout();
+
         return response()->json(['message' => 'Successfully logged out']);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/get-me",
-     *     tags={"Auth"},
-     *     summary="Hozirgi foydalanuvchi ma'lumotlari",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Foydalanuvchi ma'lumotlari qaytadi"
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized (token yo'q yoki noto'g'ri)"
-     *     )
-     * )
-     */
-    public function me()
+    public function me(): JsonResponse
     {
         $user = auth('api')->user();
         if (!$user) {
@@ -220,25 +93,103 @@ class AuthController extends Controller
         return response()->json($user);
     }
 
-    /**
+    public function refresh(): JsonResponse
+    {
+        return $this->respondWithToken(auth('api')->refresh());
+    }
+
+    protected function respondWithToken(string $token): JsonResponse
+    {
+        $user = auth('api')->user();
+        $user->load(['region', 'city']);
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type'   => 'bearer',
+            'expires_in'   => auth('api')->factory()->getTTL() * 60,
+            'user'         => $user,
+        ]);
+    }
+
+    // =========================================================================
+    // Swagger / OpenAPI annotations
+    // =========================================================================
+
+    /** register() — POST /register
+     * @OA\Post(
+     *     path="/register",
+     *     tags={"Auth"},
+     *     summary="Yangi foydalanuvchini ro'yxatdan o'tkazish",
+     *     @OA\Parameter(name="auth_type", in="query", required=true,
+     *         description="Registratsiya turi: password yoki telegram",
+     *         @OA\Schema(type="string", enum={"password","telegram"}, default="password")
+     *     ),
+     *     @OA\RequestBody(required=true,
+     *         @OA\JsonContent(
+     *             required={"phone","password","fname","lname"},
+     *             @OA\Property(property="phone",     type="string",  example="+998901234567"),
+     *             @OA\Property(property="password",  type="string",  example="parol123"),
+     *             @OA\Property(property="fname",     type="string",  example="Ism"),
+     *             @OA\Property(property="lname",     type="string",  example="Familiya"),
+     *             @OA\Property(property="region_id", type="integer", example=1),
+     *             @OA\Property(property="city_id",   type="integer", example=10),
+     *             @OA\Property(property="email",     type="string",  nullable=true),
+     *             @OA\Property(property="telegram",  type="string",  nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Muvaffaqiyatli ro'yxatdan o'tdi, token qaytdi"),
+     *     @OA\Response(response=422, description="Validatsiya xatosi")
+     * )
+     */
+
+    /** login() — POST /login
+     * @OA\Post(
+     *     path="/login",
+     *     tags={"Auth"},
+     *     summary="Telefon raqam va parol bilan login",
+     *     @OA\RequestBody(required=true,
+     *         @OA\JsonContent(
+     *             required={"phone","password"},
+     *             @OA\Property(property="phone",    type="string", example="+998901234567"),
+     *             @OA\Property(property="password", type="string", example="parol123")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Muvaffaqiyatli login, JWT token qaytadi"),
+     *     @OA\Response(response=401, description="Telefon raqam yoki parol noto'g'ri"),
+     *     @OA\Response(response=422, description="Validatsiya xatosi")
+     * )
+     */
+
+    /** logout() — POST /logout
+     * @OA\Post(
+     *     path="/logout",
+     *     tags={"Auth"},
+     *     summary="Tizimdan chiqish",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Muvaffaqiyatli logout"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+
+    /** me() — GET /get-me
+     * @OA\Get(
+     *     path="/get-me",
+     *     tags={"Auth"},
+     *     summary="Hozirgi foydalanuvchi ma'lumotlari",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Foydalanuvchi ma'lumotlari"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+
+    /** refresh() — POST /refresh
      * @OA\Post(
      *     path="/refresh",
      *     tags={"Auth"},
      *     summary="Tokenni yangilash",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Yangi token qaytadi"
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized"
-     *     )
+     *     @OA\Response(response=200, description="Yangi token qaytadi"),
+     *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
-
-    public function refresh()
-    {
-        return $this->respondWithToken(auth('api')->refresh());
-    }
 }
