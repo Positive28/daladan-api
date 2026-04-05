@@ -14,7 +14,7 @@ use OpenApi\Annotations as OA;
  *     version="1.0.0",
  *     description="AgroBozor uchun backend API"
  * )
- * @OA\Server(url="https://daladan.uz/api/v1",       description="Production server")
+ * @OA\Server(url="https://api.daladan.uz/api/v1/",    description="Production server")
  * @OA\Server(url="http://daladan-api.loc/api/v1",  description="Local dev server (OSPanel)")
  * @OA\Server(url="http://localhost:8000/api/v1",   description="php artisan serve")
  * @OA\SecurityScheme(
