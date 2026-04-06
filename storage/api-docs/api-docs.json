@@ -542,6 +542,163 @@
                 ]
             }
         },
+        "/admin/users": {
+            "get": {
+                "tags": [
+                    "Admin Users"
+                ],
+                "summary": "Registratsiyadan o'tgan foydalanuvchilar ro'yxati",
+                "description": "index() — GET /admin/users",
+                "operationId": "92668189eb08693f4f652742a255b0b8",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Userlar ro'yxati (pagination)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminUserListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden — faqat admin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/users/{user}": {
+            "get": {
+                "tags": [
+                    "Admin Users"
+                ],
+                "summary": "Bitta foydalanuvchini ko'rish",
+                "description": "show() — GET /admin/users/{user}",
+                "operationId": "363a1f09f55fcfcf568570c2cf914837",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User topildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminUserDetailResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Topilmadi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden — faqat admin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin Users"
+                ],
+                "summary": "Foydalanuvchini o'chirish",
+                "description": "destroy() — DELETE /admin/users/{user}",
+                "operationId": "0eecf798b001563fa71ffb2c12609e7d",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "O'chirildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Foydalanuvchi o'chirildi."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Topilmadi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden — faqat admin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/profile/ads": {
             "get": {
                 "tags": [
@@ -1934,6 +2091,91 @@
                 },
                 "type": "object"
             },
+            "AdminUserListItem": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "fname": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "lname": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+998901234567"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "user"
+                    },
+                    "region_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "city_id": {
+                        "type": "integer",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AdminUserListResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "properties": {
+                            "current_page": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "per_page": {
+                                "type": "integer",
+                                "example": 15
+                            },
+                            "total": {
+                                "type": "integer",
+                                "example": 100
+                            },
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/AdminUserListItem"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "AdminUserDetailResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/AdminUserListItem"
+                    }
+                },
+                "type": "object"
+            },
             "ProfileAdsPayload": {
                 "properties": {
                     "category_id": {
@@ -2476,6 +2718,10 @@
         {
             "name": "Admin Subcategories",
             "description": "Categoryga bog'langan subcategory CRUD endpointlari"
+        },
+        {
+            "name": "Admin Users",
+            "description": "Admin: registratsiyadan o'tgan userlarni boshqarish"
         },
         {
             "name": "Public",

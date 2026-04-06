@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\SubCategoryController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 
 Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
 
@@ -46,6 +47,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
         Route::prefix('admin')->middleware('admin')->group(function () {
             Route::apiResource('categories', CategoryController::class);
             Route::apiResource('subcategories', SubCategoryController::class);
+            Route::apiResource('users', AdminUserController::class)->only(['index', 'show', 'destroy']);
         });
 
         Route::post('/logout', [AuthController::class, 'logout']);
