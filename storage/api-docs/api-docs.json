@@ -20,6 +20,528 @@
         }
     ],
     "paths": {
+        "/admin/categories": {
+            "get": {
+                "tags": [
+                    "Admin Categories"
+                ],
+                "summary": "Categorylar ro'yxati",
+                "description": "index() — GET /admin/categories",
+                "operationId": "4a62a2cdc88ffd2c393471dce009f1a2",
+                "parameters": [
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "description": "Faol/NoFaol filter",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Sahifadagi elementlar soni",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Categorylar ro'yxati",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminCategoryListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin Categories"
+                ],
+                "summary": "Yangi category yaratish",
+                "description": "store() — POST /admin/categories",
+                "operationId": "9db0b636ce6117c43ccf0319ca0d23cc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AdminCategoryPayload"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Category yaratildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminCategoryResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validatsiya xatosi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/categories/{category}": {
+            "get": {
+                "tags": [
+                    "Admin Categories"
+                ],
+                "summary": "Bitta category ma'lumotini olish",
+                "description": "show() — GET /admin/categories/{category}",
+                "operationId": "6edf77904173c593835ffebf96cdd9dd",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Category topildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminCategoryResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category topilmadi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin Categories"
+                ],
+                "summary": "Category yangilash",
+                "description": "update() — PUT /admin/categories/{category}",
+                "operationId": "066a5c76316590fc886f3293422f6807",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AdminCategoryPayload"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Category yangilandi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminCategoryResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validatsiya xatosi"
+                    },
+                    "404": {
+                        "description": "Category topilmadi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin Categories"
+                ],
+                "summary": "Category o'chirish",
+                "description": "destroy() — DELETE /admin/categories/{category}",
+                "operationId": "959cbfa9d72c184885a298ae55ab1405",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Category o'chirildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Category o'chirildi."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category topilmadi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/subcategories": {
+            "get": {
+                "tags": [
+                    "Admin Subcategories"
+                ],
+                "summary": "Subcategorylar ro'yxati",
+                "description": "index() — GET /admin/subcategories",
+                "operationId": "8d6b57da1a7fabd8879ce4354bdfde36",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Faqat shu categoryga tegishli subcategorylar",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "description": "Faol/NoFaol filter",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Sahifadagi elementlar soni",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Subcategorylar ro'yxati",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminSubcategoryListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin Subcategories"
+                ],
+                "summary": "Categoryga bog'langan subcategory yaratish",
+                "description": "store() — POST /admin/subcategories",
+                "operationId": "f0a8228310fbf77625923a877269c7ab",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AdminSubcategoryPayload"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Subcategory yaratildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminSubcategoryResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validatsiya xatosi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/subcategories/{subcategory}": {
+            "get": {
+                "tags": [
+                    "Admin Subcategories"
+                ],
+                "summary": "Bitta subcategory ma'lumotini olish",
+                "description": "show() — GET /admin/subcategories/{subcategory}",
+                "operationId": "bbd681c5a557030a3641bc5787510b47",
+                "parameters": [
+                    {
+                        "name": "subcategory",
+                        "in": "path",
+                        "description": "Subcategory ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Subcategory topildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminSubcategoryResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Subcategory topilmadi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin Subcategories"
+                ],
+                "summary": "Subcategory yangilash",
+                "description": "update() — PUT /admin/subcategories/{subcategory}",
+                "operationId": "9cff75e4fa041ce3070ccd425fc0ba23",
+                "parameters": [
+                    {
+                        "name": "subcategory",
+                        "in": "path",
+                        "description": "Subcategory ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AdminSubcategoryPayload"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Subcategory yangilandi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminSubcategoryResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validatsiya xatosi"
+                    },
+                    "404": {
+                        "description": "Subcategory topilmadi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin Subcategories"
+                ],
+                "summary": "Subcategory o'chirish",
+                "description": "destroy() — DELETE /admin/subcategories/{subcategory}",
+                "operationId": "d6982c246df8da22e855f218506835cb",
+                "parameters": [
+                    {
+                        "name": "subcategory",
+                        "in": "path",
+                        "description": "Subcategory ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Subcategory o'chirildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Subcategory o'chirildi."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Subcategory topilmadi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/profile/ads": {
             "get": {
                 "tags": [
@@ -42,7 +564,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "E'lonlar ro'yxati"
+                        "description": "E'lonlar ro'yxati",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProfileAdListSuccessResponse"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -74,13 +603,16 @@
                                 ],
                                 "properties": {
                                     "category_id": {
-                                        "type": "integer"
+                                        "type": "integer",
+                                        "example": 4
                                     },
                                     "subcategory_id": {
-                                        "type": "integer"
+                                        "type": "integer",
+                                        "example": 11
                                     },
                                     "title": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Naslli echkilar"
                                     },
                                     "description": {
                                         "type": "string",
@@ -96,20 +628,15 @@
                                     },
                                     "quantity": {
                                         "type": "number",
+                                        "format": "float",
                                         "nullable": true
                                     },
                                     "unit": {
                                         "type": "string",
-                                        "enum": [
-                                            "kg",
-                                            "ton",
-                                            "bag",
-                                            "box",
-                                            "piece"
-                                        ],
+                                        "example": "bosh",
                                         "nullable": true
                                     },
-                                    "media[]": {
+                                    "media": {
                                         "type": "array",
                                         "items": {
                                             "type": "string",
@@ -124,7 +651,14 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "E'lon yaratildi"
+                        "description": "E'lon yaratildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProfileAdSuccessResponse"
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "description": "Validatsiya xatosi"
@@ -161,7 +695,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "E'lon"
+                        "description": "E'lon",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProfileAdSuccessResponse"
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "description": "Topilmadi"
@@ -193,9 +734,26 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProfileAdsPayload"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
-                        "description": "Yangilandi"
+                        "description": "Yangilandi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProfileAdSuccessResponse"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -232,10 +790,12 @@
                             "schema": {
                                 "properties": {
                                     "category_id": {
-                                        "type": "integer"
+                                        "type": "integer",
+                                        "example": 4
                                     },
                                     "subcategory_id": {
-                                        "type": "integer"
+                                        "type": "integer",
+                                        "example": 11
                                     },
                                     "title": {
                                         "type": "string"
@@ -254,17 +814,12 @@
                                     },
                                     "quantity": {
                                         "type": "number",
+                                        "format": "float",
                                         "nullable": true
                                     },
                                     "unit": {
                                         "type": "string",
-                                        "enum": [
-                                            "kg",
-                                            "ton",
-                                            "bag",
-                                            "box",
-                                            "piece"
-                                        ],
+                                        "example": "bosh",
                                         "nullable": true
                                     },
                                     "status": {
@@ -275,13 +830,13 @@
                                             "deleted"
                                         ]
                                     },
-                                    "delete_media_ids[]": {
+                                    "delete_media_ids": {
                                         "type": "array",
                                         "items": {
                                             "type": "integer"
                                         }
                                     },
-                                    "media[]": {
+                                    "media": {
                                         "type": "array",
                                         "items": {
                                             "type": "string",
@@ -296,7 +851,14 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "E'lon yangilandi"
+                        "description": "E'lon yangilandi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProfileAdSuccessResponse"
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "description": "Topilmadi"
@@ -334,7 +896,33 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "O'chirildi"
+                        "description": "O'chirildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "E'lon o'chirildi."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "description": "Topilmadi"
@@ -366,9 +954,26 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProfileAdsPayload"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
-                        "description": "Yangilandi"
+                        "description": "Yangilandi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProfileAdSuccessResponse"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -461,7 +1066,14 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Muvaffaqiyatli ro'yxatdan o'tdi, token qaytdi"
+                        "description": "Muvaffaqiyatli ro'yxatdan o'tdi, token qaytdi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthTokenResponse"
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "description": "Validatsiya xatosi"
@@ -503,7 +1115,14 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Muvaffaqiyatli login, JWT token qaytadi"
+                        "description": "Muvaffaqiyatli login, JWT token qaytadi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthTokenResponse"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Telefon raqam yoki parol noto'g'ri"
@@ -547,7 +1166,14 @@
                 "operationId": "19ada446963c7a334dc487633636b104",
                 "responses": {
                     "200": {
-                        "description": "Foydalanuvchi ma'lumotlari"
+                        "description": "Foydalanuvchi ma'lumotlari",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthUser"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -570,7 +1196,14 @@
                 "operationId": "19989e3128942ce9212927fec5791464",
                 "responses": {
                     "200": {
-                        "description": "Yangi token qaytadi"
+                        "description": "Yangi token qaytadi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthTokenResponse"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -623,7 +1256,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Paginatsiyali e'lonlar"
+                        "description": "Paginatsiyali e'lonlar",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PublicAdListSuccessResponse"
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "description": "category_id/subcategory_id noto'g'ri"
@@ -651,7 +1291,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "E'lon obyekti"
+                        "description": "E'lon obyekti",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PublicAdSuccessResponse"
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "description": "Topilmadi yoki faol emas"
@@ -669,7 +1316,17 @@
                 "operationId": "3c4bd909a16dcc3696637e4aa06559c9",
                 "responses": {
                     "200": {
-                        "description": "Viloyatlar ro'yxati"
+                        "description": "Viloyatlar ro'yxati",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ResourceRegion"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -696,7 +1353,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Tumanlar ro'yxati"
+                        "description": "Tumanlar ro'yxati",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ResourceCity"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -711,7 +1378,17 @@
                 "operationId": "b5fd084911d81a5540dc9e84a4faf972",
                 "responses": {
                     "200": {
-                        "description": "Kategoriyalar ro'yxati"
+                        "description": "Kategoriyalar ro'yxati",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ResourceCategory"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -738,7 +1415,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Subkategoriyalar ro'yxati"
+                        "description": "Subkategoriyalar ro'yxati",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ResourceSubcategory"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -753,7 +1440,14 @@
                 "operationId": "619297248f5a11bac7e6dc42cb107928",
                 "responses": {
                     "200": {
-                        "description": "Profil ma'lumotlari"
+                        "description": "Profil ma'lumotlari",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProfileUser"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -810,7 +1504,14 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Profil yangilandi"
+                        "description": "Profil yangilandi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProfileUserResponse"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -855,7 +1556,24 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Avatar yangilandi"
+                        "description": "Avatar yangilandi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Avatar yangilandi"
+                                        },
+                                        "avatar_url": {
+                                            "type": "string",
+                                            "example": "/storage/avatars/file.jpg"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -907,7 +1625,20 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Parol muvaffaqiyatli o'zgartirildi"
+                        "description": "Parol muvaffaqiyatli o'zgartirildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Parol muvaffaqiyatli o'zgartirildi"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -925,6 +1656,810 @@
         }
     },
     "components": {
+        "schemas": {
+            "AdminCategory": {
+                "required": [
+                    "id",
+                    "name",
+                    "slug",
+                    "is_active",
+                    "created_at",
+                    "updated_at"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Chorva hayvonlari"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "chorva-hayvonlari"
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 4,
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-18T10:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-18T10:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "AdminCategoryPayload": {
+                "required": [
+                    "name",
+                    "slug",
+                    "is_active"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "example": "Chorva hayvonlari"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "example": "chorva-hayvonlari"
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 4,
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "AdminCategoryResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/AdminCategory"
+                    }
+                },
+                "type": "object"
+            },
+            "AdminCategoryListResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "properties": {
+                            "current_page": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "per_page": {
+                                "type": "integer",
+                                "example": 15
+                            },
+                            "total": {
+                                "type": "integer",
+                                "example": 23
+                            },
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/AdminCategory"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "AdminSubcategory": {
+                "required": [
+                    "id",
+                    "category_id",
+                    "name",
+                    "slug",
+                    "is_active",
+                    "created_at",
+                    "updated_at"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "category_id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Echkilar"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "echkilar"
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-18T10:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-18T10:00:00Z"
+                    },
+                    "category": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 4
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Chorva hayvonlari"
+                            },
+                            "slug": {
+                                "type": "string",
+                                "example": "chorva-hayvonlari"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "AdminSubcategoryPayload": {
+                "required": [
+                    "category_id",
+                    "name",
+                    "slug",
+                    "is_active"
+                ],
+                "properties": {
+                    "category_id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "example": "Echkilar"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "example": "echkilar"
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "AdminSubcategoryResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/AdminSubcategory"
+                    }
+                },
+                "type": "object"
+            },
+            "AdminSubcategoryListResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "properties": {
+                            "current_page": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "per_page": {
+                                "type": "integer",
+                                "example": 15
+                            },
+                            "total": {
+                                "type": "integer",
+                                "example": 42
+                            },
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/AdminSubcategory"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "ProfileAdsPayload": {
+                "properties": {
+                    "category_id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "subcategory_id": {
+                        "type": "integer",
+                        "example": 11
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 150,
+                        "example": "Naslli echkilar"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "district": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "nullable": true
+                    },
+                    "price": {
+                        "type": "integer",
+                        "example": 2100000,
+                        "nullable": true
+                    },
+                    "quantity": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 10,
+                        "nullable": true
+                    },
+                    "unit": {
+                        "type": "string",
+                        "example": "bosh",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "active",
+                            "sold",
+                            "deleted"
+                        ]
+                    },
+                    "delete_media_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "ProfileAdResponseItem": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 101
+                    },
+                    "category_id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "subcategory_id": {
+                        "type": "integer",
+                        "example": 11
+                    },
+                    "seller_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Naslli echkilar"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "district": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "price": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "quantity": {
+                        "type": "number",
+                        "format": "float",
+                        "nullable": true
+                    },
+                    "unit": {
+                        "type": "string",
+                        "example": "piece",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "ProfileAdSuccessResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/ProfileAdResponseItem"
+                    }
+                },
+                "type": "object"
+            },
+            "ProfileAdListSuccessResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "properties": {
+                            "current_page": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "per_page": {
+                                "type": "integer",
+                                "example": 15
+                            },
+                            "total": {
+                                "type": "integer",
+                                "example": 12
+                            },
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/ProfileAdResponseItem"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "AuthUser": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "fname": {
+                        "type": "string",
+                        "example": "Ali",
+                        "nullable": true
+                    },
+                    "lname": {
+                        "type": "string",
+                        "example": "Valiyev",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+998901234567"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "ali@mail.com",
+                        "nullable": true
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "user"
+                    },
+                    "region_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "city_id": {
+                        "type": "integer",
+                        "example": 10,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AuthTokenResponse": {
+                "properties": {
+                    "access_token": {
+                        "type": "string",
+                        "example": "eyJ0eXAiOiJKV1Qi..."
+                    },
+                    "token_type": {
+                        "type": "string",
+                        "example": "bearer"
+                    },
+                    "expires_in": {
+                        "type": "integer",
+                        "example": 3600
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/AuthUser"
+                    }
+                },
+                "type": "object"
+            },
+            "PublicAd": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 201
+                    },
+                    "category_id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "subcategory_id": {
+                        "type": "integer",
+                        "example": 11
+                    },
+                    "seller_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Naslli echkilar"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "district": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "price": {
+                        "type": "integer",
+                        "example": 2200000,
+                        "nullable": true
+                    },
+                    "quantity": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 12,
+                        "nullable": true
+                    },
+                    "unit": {
+                        "type": "string",
+                        "example": "piece",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "PublicAdSuccessResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/PublicAd"
+                    }
+                },
+                "type": "object"
+            },
+            "PublicAdListSuccessResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "properties": {
+                            "current_page": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "per_page": {
+                                "type": "integer",
+                                "example": 15
+                            },
+                            "total": {
+                                "type": "integer",
+                                "example": 300
+                            },
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/PublicAd"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "ResourceCity": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "region_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name_uz": {
+                        "type": "string",
+                        "example": "Qorovulbozor"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "qorovulbozor"
+                    }
+                },
+                "type": "object"
+            },
+            "ResourceRegion": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name_uz": {
+                        "type": "string",
+                        "example": "Buxoro"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "buxoro"
+                    },
+                    "cities": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ResourceCity"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "ResourceCategory": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Chorva hayvonlari"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "chorva-hayvonlari"
+                    }
+                },
+                "type": "object"
+            },
+            "ResourceSubcategory": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 11
+                    },
+                    "category_id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Echkilar"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "echkilar"
+                    }
+                },
+                "type": "object"
+            },
+            "ProfileAdShort": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 101
+                    },
+                    "category_id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "subcategory_id": {
+                        "type": "integer",
+                        "example": 11
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Echkilar sotiladi"
+                    },
+                    "price": {
+                        "type": "integer",
+                        "example": 1500000,
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "ProfileUser": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "fname": {
+                        "type": "string",
+                        "example": "Ali",
+                        "nullable": true
+                    },
+                    "lname": {
+                        "type": "string",
+                        "example": "Valiyev",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+998901234567"
+                    },
+                    "telegram": {
+                        "type": "string",
+                        "example": "@ali",
+                        "nullable": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "ali@mail.com",
+                        "nullable": true
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "user"
+                    },
+                    "region_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "city_id": {
+                        "type": "integer",
+                        "example": 10,
+                        "nullable": true
+                    },
+                    "avatar_url": {
+                        "type": "string",
+                        "example": "http://daladan-api.loc/storage/avatars/abc.jpg",
+                        "nullable": true
+                    },
+                    "ads": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProfileAdShort"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "ProfileUserResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Profil yangilandi"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/ProfileUser"
+                    }
+                },
+                "type": "object"
+            }
+        },
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",
@@ -934,6 +2469,14 @@
         }
     },
     "tags": [
+        {
+            "name": "Admin Categories",
+            "description": "Admin panel uchun category CRUD endpointlari"
+        },
+        {
+            "name": "Admin Subcategories",
+            "description": "Categoryga bog'langan subcategory CRUD endpointlari"
+        },
         {
             "name": "Public",
             "description": "Front uchun ochiq (tokensiz) endpointlar"
