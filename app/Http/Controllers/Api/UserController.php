@@ -9,12 +9,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use OpenApi\Annotations as OA;
 
-/**
- * @OA\Tag(
- *     name="Profile",
- *     description="Autentifikatsiyalangan foydalanuvchi profili"
- * )
- */
 class UserController extends Controller
 {
     public function profile(): JsonResponse
@@ -100,7 +94,11 @@ class UserController extends Controller
      *     tags={"Profile"},
      *     summary="O'zi haqida ma'lumot",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Profil ma'lumotlari"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profil ma'lumotlari",
+     *         @OA\JsonContent(ref="#/components/schemas/ProfileUser")
+     *     ),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
@@ -123,7 +121,11 @@ class UserController extends Controller
      *             @OA\Property(property="city_id",   type="integer", nullable=true)
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Profil yangilandi"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profil yangilandi",
+     *         @OA\JsonContent(ref="#/components/schemas/ProfileUserResponse")
+     *     ),
      *     @OA\Response(response=401, description="Unauthorized"),
      *     @OA\Response(response=422, description="Validatsiya xatosi")
      * )
@@ -145,7 +147,15 @@ class UserController extends Controller
      *             )
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Avatar yangilandi"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Avatar yangilandi",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Avatar yangilandi"),
+     *             @OA\Property(property="avatar_url", type="string", example="/storage/avatars/file.jpg")
+     *         )
+     *     ),
      *     @OA\Response(response=401, description="Unauthorized"),
      *     @OA\Response(response=422, description="Validatsiya xatosi")
      * )
@@ -167,10 +177,57 @@ class UserController extends Controller
      *             @OA\Property(property="new_password_confirmation", type="string")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Parol muvaffaqiyatli o'zgartirildi"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Parol muvaffaqiyatli o'zgartirildi",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Parol muvaffaqiyatli o'zgartirildi")
+     *         )
+     *     ),
      *     @OA\Response(response=401, description="Unauthorized"),
      *     @OA\Response(response=422, description="Validatsiya xatosi / parol mos kelmadi")
      * )
      */
     private function _swaggerUpdatePassword(): void {}
+
+    /**
+     * @OA\Tag(
+     *     name="Profile",
+     *     description="Autentifikatsiyalangan foydalanuvchi profili"
+     * )
+     * @OA\Schema(
+     *     schema="ProfileAdShort",
+     *     type="object",
+     *     @OA\Property(property="id", type="integer", example=101),
+     *     @OA\Property(property="category_id", type="integer", example=4),
+     *     @OA\Property(property="subcategory_id", type="integer", example=11),
+     *     @OA\Property(property="title", type="string", example="Echkilar sotiladi"),
+     *     @OA\Property(property="price", type="integer", nullable=true, example=1500000),
+     *     @OA\Property(property="status", type="string", example="active"),
+     *     @OA\Property(property="created_at", type="string", format="date-time")
+     * )
+     * @OA\Schema(
+     *     schema="ProfileUser",
+     *     type="object",
+     *     @OA\Property(property="id", type="integer", example=1),
+     *     @OA\Property(property="fname", type="string", nullable=true, example="Ali"),
+     *     @OA\Property(property="lname", type="string", nullable=true, example="Valiyev"),
+     *     @OA\Property(property="phone", type="string", example="+998901234567"),
+     *     @OA\Property(property="telegram", type="string", nullable=true, example="@ali"),
+     *     @OA\Property(property="email", type="string", nullable=true, example="ali@mail.com"),
+     *     @OA\Property(property="role", type="string", example="user"),
+     *     @OA\Property(property="region_id", type="integer", nullable=true, example=1),
+     *     @OA\Property(property="city_id", type="integer", nullable=true, example=10),
+     *     @OA\Property(property="avatar_url", type="string", nullable=true, example="http://daladan-api.loc/storage/avatars/abc.jpg"),
+     *     @OA\Property(property="ads", type="array", @OA\Items(ref="#/components/schemas/ProfileAdShort"))
+     * )
+     * @OA\Schema(
+     *     schema="ProfileUserResponse",
+     *     type="object",
+     *     @OA\Property(property="message", type="string", example="Profil yangilandi"),
+     *     @OA\Property(property="user", ref="#/components/schemas/ProfileUser")
+     * )
+     */
+    private function _swaggerSchemas(): void {}
 }

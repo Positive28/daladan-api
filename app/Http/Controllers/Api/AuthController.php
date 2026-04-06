@@ -8,22 +8,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Annotations as OA;
 
-/**
- * @OA\Info(
- *     title="Start API",
- *     version="1.0.0",
- *     description="AgroBozor uchun backend API"
- * )
- * @OA\Server(url="https://api.daladan.uz/api/v1/",    description="Production server")
- * @OA\Server(url="http://daladan-api.loc/api/v1",  description="Local dev server (OSPanel)")
- * @OA\Server(url="http://localhost:8000/api/v1",   description="php artisan serve")
- * @OA\SecurityScheme(
- *     securityScheme="bearerAuth",
- *     type="http",
- *     scheme="bearer",
- *     bearerFormat="JWT"
- * )
- */
 class AuthController extends Controller
 {
     public function register(Request $request): JsonResponse
@@ -140,7 +124,11 @@ class AuthController extends Controller
      *             @OA\Property(property="telegram_id", type="integer", nullable=true)
      *         )
      *     ),
-     *     @OA\Response(response=201, description="Muvaffaqiyatli ro'yxatdan o'tdi, token qaytdi"),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Muvaffaqiyatli ro'yxatdan o'tdi, token qaytdi",
+     *         @OA\JsonContent(ref="#/components/schemas/AuthTokenResponse")
+     *     ),
      *     @OA\Response(response=422, description="Validatsiya xatosi")
      * )
      */
@@ -159,7 +147,11 @@ class AuthController extends Controller
      *             @OA\Property(property="password", type="string", example="parol123")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Muvaffaqiyatli login, JWT token qaytadi"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Muvaffaqiyatli login, JWT token qaytadi",
+     *         @OA\JsonContent(ref="#/components/schemas/AuthTokenResponse")
+     *     ),
      *     @OA\Response(response=401, description="Telefon raqam yoki parol noto'g'ri"),
      *     @OA\Response(response=422, description="Validatsiya xatosi")
      * )
@@ -186,7 +178,11 @@ class AuthController extends Controller
      *     tags={"Auth"},
      *     summary="Hozirgi foydalanuvchi ma'lumotlari",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Foydalanuvchi ma'lumotlari"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Foydalanuvchi ma'lumotlari",
+     *         @OA\JsonContent(ref="#/components/schemas/AuthUser")
+     *     ),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
@@ -199,9 +195,51 @@ class AuthController extends Controller
      *     tags={"Auth"},
      *     summary="Tokenni yangilash",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Yangi token qaytadi"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Yangi token qaytadi",
+     *         @OA\JsonContent(ref="#/components/schemas/AuthTokenResponse")
+     *     ),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
     private function _swaggerRefresh(): void {}
+
+    /**
+     * @OA\Info(
+     *     title="Start API",
+     *     version="1.0.0",
+     *     description="AgroBozor uchun backend API"
+     * )
+     * @OA\Server(url="https://api.daladan.uz/api/v1/", description="Production server")
+     * @OA\Server(url="http://daladan-api.loc/api/v1", description="Local dev server (OSPanel)")
+     * @OA\Server(url="http://localhost:8000/api/v1", description="php artisan serve")
+     * @OA\SecurityScheme(
+     *     securityScheme="bearerAuth",
+     *     type="http",
+     *     scheme="bearer",
+     *     bearerFormat="JWT"
+     * )
+     * @OA\Schema(
+     *     schema="AuthUser",
+     *     type="object",
+     *     @OA\Property(property="id", type="integer", example=1),
+     *     @OA\Property(property="fname", type="string", nullable=true, example="Ali"),
+     *     @OA\Property(property="lname", type="string", nullable=true, example="Valiyev"),
+     *     @OA\Property(property="phone", type="string", example="+998901234567"),
+     *     @OA\Property(property="email", type="string", nullable=true, example="ali@mail.com"),
+     *     @OA\Property(property="role", type="string", example="user"),
+     *     @OA\Property(property="region_id", type="integer", nullable=true, example=1),
+     *     @OA\Property(property="city_id", type="integer", nullable=true, example=10)
+     * )
+     * @OA\Schema(
+     *     schema="AuthTokenResponse",
+     *     type="object",
+     *     @OA\Property(property="access_token", type="string", example="eyJ0eXAiOiJKV1Qi..."),
+     *     @OA\Property(property="token_type", type="string", example="bearer"),
+     *     @OA\Property(property="expires_in", type="integer", example=3600),
+     *     @OA\Property(property="user", ref="#/components/schemas/AuthUser")
+     * )
+     */
+    private function _swaggerMetaSchemas(): void {}
 }

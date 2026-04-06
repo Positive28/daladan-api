@@ -11,12 +11,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Annotations as OA;
 
-/**
- * @OA\Tag(
- *     name="Resources",
- *     description="Viloyat, tuman, kategoriya va subkategoriya resurslari"
- * )
- */
 class ResourceController extends Controller
 {
     public function regions(): JsonResponse
@@ -70,7 +64,11 @@ class ResourceController extends Controller
      *     path="/resources/regions",
      *     tags={"Resources"},
      *     summary="Faol viloyatlar ro'yxati (ichida faol tumanlari bilan)",
-     *     @OA\Response(response=200, description="Viloyatlar ro'yxati")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Viloyatlar ro'yxati",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/ResourceRegion"))
+     *     )
      * )
      */
     private function _swaggerRegions(): void {}
@@ -85,7 +83,11 @@ class ResourceController extends Controller
      *         description="Faqat shu viloyatga tegishli tumanlar",
      *         @OA\Schema(type="integer", example=1)
      *     ),
-     *     @OA\Response(response=200, description="Tumanlar ro'yxati")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Tumanlar ro'yxati",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/ResourceCity"))
+     *     )
      * )
      */
     private function _swaggerCities(): void {}
@@ -96,7 +98,11 @@ class ResourceController extends Controller
      *     path="/resources/categories",
      *     tags={"Resources"},
      *     summary="Faol kategoriyalar ro'yxati",
-     *     @OA\Response(response=200, description="Kategoriyalar ro'yxati")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Kategoriyalar ro'yxati",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/ResourceCategory"))
+     *     )
      * )
      */
     private function _swaggerCategories(): void {}
@@ -111,8 +117,51 @@ class ResourceController extends Controller
      *         description="Faqat shu kategoriyaga tegishli subkategoriyalar",
      *         @OA\Schema(type="integer", example=1)
      *     ),
-     *     @OA\Response(response=200, description="Subkategoriyalar ro'yxati")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Subkategoriyalar ro'yxati",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/ResourceSubcategory"))
+     *     )
      * )
      */
     private function _swaggerSubcategories(): void {}
+
+    /**
+     * @OA\Tag(
+     *     name="Resources",
+     *     description="Viloyat, tuman, kategoriya va subkategoriya resurslari"
+     * )
+     * @OA\Schema(
+     *     schema="ResourceCity",
+     *     type="object",
+     *     @OA\Property(property="id", type="integer", example=10),
+     *     @OA\Property(property="region_id", type="integer", example=1),
+     *     @OA\Property(property="name_uz", type="string", example="Qorovulbozor"),
+     *     @OA\Property(property="slug", type="string", example="qorovulbozor")
+     * )
+     * @OA\Schema(
+     *     schema="ResourceRegion",
+     *     type="object",
+     *     @OA\Property(property="id", type="integer", example=1),
+     *     @OA\Property(property="name_uz", type="string", example="Buxoro"),
+     *     @OA\Property(property="slug", type="string", example="buxoro"),
+     *     @OA\Property(property="cities", type="array", @OA\Items(ref="#/components/schemas/ResourceCity"))
+     * )
+     * @OA\Schema(
+     *     schema="ResourceCategory",
+     *     type="object",
+     *     @OA\Property(property="id", type="integer", example=4),
+     *     @OA\Property(property="name", type="string", example="Chorva hayvonlari"),
+     *     @OA\Property(property="slug", type="string", example="chorva-hayvonlari")
+     * )
+     * @OA\Schema(
+     *     schema="ResourceSubcategory",
+     *     type="object",
+     *     @OA\Property(property="id", type="integer", example=11),
+     *     @OA\Property(property="category_id", type="integer", example=4),
+     *     @OA\Property(property="name", type="string", example="Echkilar"),
+     *     @OA\Property(property="slug", type="string", example="echkilar")
+     * )
+     */
+    private function _swaggerSchemas(): void {}
 }

@@ -6,7 +6,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\Admin\CategoryController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\SubCategoryController;
 
 Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
 
@@ -42,8 +43,9 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
             Route::apiResource('ads', AdsController::class);
         });
 
-        Route::prefix('admin')->group(function () {
+        Route::prefix('admin')->middleware('admin')->group(function () {
             Route::apiResource('categories', CategoryController::class);
+            Route::apiResource('subcategories', SubCategoryController::class);
         });
 
         Route::post('/logout', [AuthController::class, 'logout']);

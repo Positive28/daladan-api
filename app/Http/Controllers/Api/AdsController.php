@@ -50,7 +50,7 @@ class AdsController extends Controller
             'district'    => 'nullable|string|max:100',
             'price'       => 'nullable|integer|min:0',
             'quantity'    => 'nullable|numeric|min:0',
-            'unit'        => 'nullable|string|in:kg,ton,bag,box,piece',
+            'unit'        => 'nullable|string|max:20',
             'media'       => 'nullable|array',
             'media.*'     => 'file|mimetypes:image/jpeg,image/png,image/webp,video/mp4,video/quicktime|max:51200',
         ], [
@@ -118,7 +118,7 @@ class AdsController extends Controller
             'district'           => 'nullable|string|max:100',
             'price'              => 'nullable|integer|min:0',
             'quantity'           => 'nullable|numeric|min:0',
-            'unit'               => 'nullable|string|in:kg,ton,bag,box,piece',
+            'unit'               => 'nullable|string|max:20',
             'status'             => 'sometimes|string|in:active,sold,deleted',
             'media'              => 'nullable|array',
             'media.*'            => 'file|mimetypes:image/jpeg,image/png,image/webp,video/mp4,video/quicktime|max:51200',
@@ -186,7 +186,11 @@ class AdsController extends Controller
      *     summary="O'z reklamalari ro'yxati",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", example=15)),
-     *     @OA\Response(response=200, description="E'lonlar ro'yxati"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="E'lonlar ro'yxati",
+     *         @OA\JsonContent(ref="#/components/schemas/ProfileAdListSuccessResponse")
+     *     ),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
@@ -203,19 +207,23 @@ class AdsController extends Controller
      *         @OA\MediaType(mediaType="multipart/form-data",
      *             @OA\Schema(
      *                 required={"category_id","subcategory_id","title"},
-     *                 @OA\Property(property="category_id",    type="integer"),
-     *                 @OA\Property(property="subcategory_id", type="integer"),
-     *                 @OA\Property(property="title",          type="string"),
-     *                 @OA\Property(property="description",    type="string",  nullable=true),
-     *                 @OA\Property(property="district",       type="string",  nullable=true),
-     *                 @OA\Property(property="price",          type="integer", nullable=true),
-     *                 @OA\Property(property="quantity",       type="number",  nullable=true),
-     *                 @OA\Property(property="unit",           type="string",  nullable=true, enum={"kg","ton","bag","box","piece"}),
-     *                 @OA\Property(property="media[]",        type="array",   @OA\Items(type="string", format="binary"))
+     *                 @OA\Property(property="category_id", type="integer", example=4),
+     *                 @OA\Property(property="subcategory_id", type="integer", example=11),
+     *                 @OA\Property(property="title", type="string", example="Naslli echkilar"),
+     *                 @OA\Property(property="description", type="string", nullable=true),
+     *                 @OA\Property(property="district", type="string", nullable=true),
+     *                 @OA\Property(property="price", type="integer", nullable=true),
+     *                 @OA\Property(property="quantity", type="number", format="float", nullable=true),
+     *                 @OA\Property(property="unit", type="string", nullable=true, example="bosh"),
+     *                 @OA\Property(property="media", type="array", @OA\Items(type="string", format="binary"))
      *             )
      *         )
      *     ),
-     *     @OA\Response(response=201, description="E'lon yaratildi"),
+     *     @OA\Response(
+     *         response=201,
+     *         description="E'lon yaratildi",
+     *         @OA\JsonContent(ref="#/components/schemas/ProfileAdSuccessResponse")
+     *     ),
      *     @OA\Response(response=422, description="Validatsiya xatosi"),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
@@ -230,7 +238,11 @@ class AdsController extends Controller
      *     summary="Bitta o'z reklamasini ko'rish",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="ad", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="E'lon"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="E'lon",
+     *         @OA\JsonContent(ref="#/components/schemas/ProfileAdSuccessResponse")
+     *     ),
      *     @OA\Response(response=404, description="Topilmadi"),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
@@ -248,21 +260,25 @@ class AdsController extends Controller
      *     @OA\RequestBody(required=false,
      *         @OA\MediaType(mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 @OA\Property(property="category_id",    type="integer"),
-     *                 @OA\Property(property="subcategory_id", type="integer"),
-     *                 @OA\Property(property="title",          type="string"),
-     *                 @OA\Property(property="description",    type="string",  nullable=true),
-     *                 @OA\Property(property="district",       type="string",  nullable=true),
-     *                 @OA\Property(property="price",          type="integer", nullable=true),
-     *                 @OA\Property(property="quantity",       type="number",  nullable=true),
-     *                 @OA\Property(property="unit",           type="string",  nullable=true, enum={"kg","ton","bag","box","piece"}),
-     *                 @OA\Property(property="status",         type="string",  enum={"active","sold","deleted"}),
-     *                 @OA\Property(property="delete_media_ids[]", type="array", @OA\Items(type="integer")),
-     *                 @OA\Property(property="media[]",        type="array",   @OA\Items(type="string", format="binary"))
+     *                 @OA\Property(property="category_id", type="integer", example=4),
+     *                 @OA\Property(property="subcategory_id", type="integer", example=11),
+     *                 @OA\Property(property="title", type="string"),
+     *                 @OA\Property(property="description", type="string", nullable=true),
+     *                 @OA\Property(property="district", type="string", nullable=true),
+     *                 @OA\Property(property="price", type="integer", nullable=true),
+     *                 @OA\Property(property="quantity", type="number", format="float", nullable=true),
+     *                 @OA\Property(property="unit", type="string", nullable=true, example="bosh"),
+     *                 @OA\Property(property="status", type="string", enum={"active","sold","deleted"}),
+     *                 @OA\Property(property="delete_media_ids", type="array", @OA\Items(type="integer")),
+     *                 @OA\Property(property="media", type="array", @OA\Items(type="string", format="binary"))
      *             )
      *         )
      *     ),
-     *     @OA\Response(response=200, description="E'lon yangilandi"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="E'lon yangilandi",
+     *         @OA\JsonContent(ref="#/components/schemas/ProfileAdSuccessResponse")
+     *     ),
      *     @OA\Response(response=404, description="Topilmadi"),
      *     @OA\Response(response=422, description="Validatsiya xatosi"),
      *     @OA\Response(response=401, description="Unauthorized")
@@ -273,7 +289,15 @@ class AdsController extends Controller
      *     summary="PUT alias (JSON body)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="ad", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Yangilandi"),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(ref="#/components/schemas/ProfileAdsPayload")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Yangilandi",
+     *         @OA\JsonContent(ref="#/components/schemas/ProfileAdSuccessResponse")
+     *     ),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      * @OA\Patch(
@@ -282,7 +306,15 @@ class AdsController extends Controller
      *     summary="PATCH alias (JSON body)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="ad", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Yangilandi"),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(ref="#/components/schemas/ProfileAdsPayload")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Yangilandi",
+     *         @OA\JsonContent(ref="#/components/schemas/ProfileAdSuccessResponse")
+     *     ),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
@@ -296,10 +328,75 @@ class AdsController extends Controller
      *     summary="O'z reklamasini o'chirish",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="ad", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="O'chirildi"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="O'chirildi",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="ok"),
+     *             @OA\Property(property="data", type="object", @OA\Property(property="message", type="string", example="E'lon o'chirildi."))
+     *         )
+     *     ),
      *     @OA\Response(response=404, description="Topilmadi"),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
     private function _swaggerDestroy(): void {}
+
+    /**
+     * @OA\Schema(
+     *     schema="ProfileAdsPayload",
+     *     type="object",
+     *     @OA\Property(property="category_id", type="integer", example=4),
+     *     @OA\Property(property="subcategory_id", type="integer", example=11),
+     *     @OA\Property(property="title", type="string", maxLength=150, example="Naslli echkilar"),
+     *     @OA\Property(property="description", type="string", nullable=true),
+     *     @OA\Property(property="district", type="string", nullable=true, maxLength=100),
+     *     @OA\Property(property="price", type="integer", nullable=true, example=2100000),
+     *     @OA\Property(property="quantity", type="number", format="float", nullable=true, example=10),
+     *     @OA\Property(property="unit", type="string", nullable=true, example="bosh"),
+     *     @OA\Property(property="status", type="string", enum={"active","sold","deleted"}),
+     *     @OA\Property(property="delete_media_ids", type="array", @OA\Items(type="integer"))
+     * )
+     * @OA\Schema(
+     *     schema="ProfileAdResponseItem",
+     *     type="object",
+     *     @OA\Property(property="id", type="integer", example=101),
+     *     @OA\Property(property="category_id", type="integer", example=4),
+     *     @OA\Property(property="subcategory_id", type="integer", example=11),
+     *     @OA\Property(property="seller_id", type="integer", example=1),
+     *     @OA\Property(property="title", type="string", example="Naslli echkilar"),
+     *     @OA\Property(property="description", type="string", nullable=true),
+     *     @OA\Property(property="district", type="string", nullable=true),
+     *     @OA\Property(property="price", type="integer", nullable=true),
+     *     @OA\Property(property="quantity", type="number", format="float", nullable=true),
+     *     @OA\Property(property="unit", type="string", nullable=true, example="piece"),
+     *     @OA\Property(property="status", type="string", example="active"),
+     *     @OA\Property(property="created_at", type="string", format="date-time"),
+     *     @OA\Property(property="updated_at", type="string", format="date-time")
+     * )
+     * @OA\Schema(
+     *     schema="ProfileAdSuccessResponse",
+     *     type="object",
+     *     @OA\Property(property="success", type="boolean", example=true),
+     *     @OA\Property(property="message", type="string", example="ok"),
+     *     @OA\Property(property="data", ref="#/components/schemas/ProfileAdResponseItem")
+     * )
+     * @OA\Schema(
+     *     schema="ProfileAdListSuccessResponse",
+     *     type="object",
+     *     @OA\Property(property="success", type="boolean", example=true),
+     *     @OA\Property(property="message", type="string", example="ok"),
+     *     @OA\Property(
+     *         property="data",
+     *         type="object",
+     *         @OA\Property(property="current_page", type="integer", example=1),
+     *         @OA\Property(property="per_page", type="integer", example=15),
+     *         @OA\Property(property="total", type="integer", example=12),
+     *         @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/ProfileAdResponseItem"))
+     *     )
+     * )
+     */
+    private function _swaggerSchemas(): void {}
 }
