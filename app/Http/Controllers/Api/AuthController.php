@@ -7,6 +7,10 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Annotations as OA;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class AuthController extends Controller
 {
@@ -80,12 +84,30 @@ class AuthController extends Controller
 
     public function refresh(): JsonResponse
     {
-        return $this->respondWithToken(auth('api')->refresh());
+        try {
+            $token = auth('api')->refresh();
+        } catch (TokenBlacklistedException) {
+            return response()->errorJson('Token allaqachon bekor qilingan (blacklist).', 401);
+        } catch (TokenExpiredException) {
+            return response()->errorJson('Token muddati o\'tgan, qaytadan login qiling.', 401);
+        } catch (TokenInvalidException) {
+            return response()->errorJson('Token noto\'g\'ri.', 401);
+        } catch (JWTException) {
+            return response()->errorJson('Token yangilab bo\'lmadi.', 401);
+        }
+
+        return $this->respondWithToken($token);
     }
 
     protected function respondWithToken(string $token): JsonResponse
     {
-        $user = auth('api')->user();
+        // refresh() dan keyin eski token blacklist bo‘ladi; user ni yangi token bilan olish kerak
+        $user = auth('api')->setToken($token)->user();
+
+        if (! $user) {
+            return response()->errorJson('Unauthorized', 401);
+        }
+
         $user->load(['region', 'city']);
 
         return response()->json([
