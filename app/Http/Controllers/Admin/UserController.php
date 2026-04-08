@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use OpenApi\Annotations as OA;
 
 class UserController extends Controller
@@ -23,7 +25,7 @@ class UserController extends Controller
             ->orderByDesc('id')
             ->paginate($request->input('per_page', 15));
 
-        return response()->json(response()->successJson($users));
+        return response()->successJson($users);
     }
 
     public function show(string $id): JsonResponse
@@ -36,7 +38,62 @@ class UserController extends Controller
             return response()->errorJson('Foydalanuvchi topilmadi.', 404);
         }
 
-        return response()->json(response()->successJson($user));
+        return response()->successJson($user);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'fname'       => 'nullable|string|max:100',
+            'lname'       => 'nullable|string|max:100',
+            'phone'       => 'required|string|max:20|unique:users,phone',
+            'email'       => 'nullable|email|max:150|unique:users,email',
+            'password'    => 'required|string|min:6',
+            'telegram'    => 'nullable|string|max:100',
+            'telegram_id' => 'nullable|integer|unique:users,telegram_id',
+            'region_id'   => 'nullable|integer|exists:regions,id',
+            'city_id'     => 'nullable|integer|exists:cities,id',
+            'role'        => ['nullable', Rule::in([User::ROLE_USER, User::ROLE_ADMIN])],
+        ]);
+
+        $data['password'] = Hash::make($data['password']);
+        $data['role'] ??= User::ROLE_USER;
+
+        $user = User::create($data);
+        $user->load(['region:id,name_uz', 'city:id,name_uz']);
+
+        return response()->successJson($user, 201);
+    }
+
+    public function update(Request $request, string $id): JsonResponse
+    {
+        $user = User::where('role', User::ROLE_USER)->find($id);
+
+        if (!$user) {
+            return response()->errorJson('Foydalanuvchi topilmadi.', 404);
+        }
+
+        $data = $request->validate([
+            'fname'       => 'sometimes|nullable|string|max:100',
+            'lname'       => 'sometimes|nullable|string|max:100',
+            'phone'       => ['sometimes', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
+            'email'       => ['sometimes', 'nullable', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user->id)],
+            'password'    => 'sometimes|string|min:6',
+            'telegram'    => 'sometimes|nullable|string|max:100',
+            'telegram_id' => ['sometimes', 'nullable', 'integer', Rule::unique('users', 'telegram_id')->ignore($user->id)],
+            'region_id'   => 'sometimes|nullable|integer|exists:regions,id',
+            'city_id'     => 'sometimes|nullable|integer|exists:cities,id',
+            'role'        => ['sometimes', Rule::in([User::ROLE_USER, User::ROLE_ADMIN])],
+        ]);
+
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        }
+
+        $user->update($data);
+        $user->load(['region:id,name_uz', 'city:id,name_uz']);
+
+        return response()->successJson($user);
     }
 
     public function destroy(string $id): JsonResponse
@@ -49,7 +106,7 @@ class UserController extends Controller
 
         $user->delete();
 
-        return response()->json(response()->successJson(['message' => 'Foydalanuvchi o\'chirildi.']));
+        return response()->successJson(['message' => 'Foydalanuvchi o\'chirildi.']);
     }
 
     // =========================================================================
@@ -105,6 +162,75 @@ class UserController extends Controller
      * )
      */
     private function _swaggerShow(): void {}
+
+    /**
+     * store() — POST /admin/users
+     * @OA\Post(
+     *     path="/admin/users",
+     *     tags={"Admin Users"},
+     *     summary="Yangi foydalanuvchi yaratish",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"phone","password"},
+     *             @OA\Property(property="fname",       type="string",  example="Ali"),
+     *             @OA\Property(property="lname",       type="string",  example="Valiyev"),
+     *             @OA\Property(property="phone",       type="string",  example="+998901234567"),
+     *             @OA\Property(property="email",       type="string",  example="ali@example.com"),
+     *             @OA\Property(property="password",    type="string",  example="secret123"),
+     *             @OA\Property(property="telegram",    type="string",  example="ali_uz"),
+     *             @OA\Property(property="telegram_id", type="integer", example=123456789),
+     *             @OA\Property(property="region_id",   type="integer", example=1),
+     *             @OA\Property(property="city_id",     type="integer", example=5),
+     *             @OA\Property(property="role",        type="string",  enum={"user","admin"}, example="user")
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Yaratildi", @OA\JsonContent(ref="#/components/schemas/AdminUserDetailResponse")),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden — faqat admin")
+     * )
+     */
+    private function _swaggerStore(): void {}
+
+    /**
+     * update() — PUT /admin/users/{user}
+     * @OA\Put(
+     *     path="/admin/users/{user}",
+     *     tags={"Admin Users"},
+     *     summary="Foydalanuvchini tahrirlash",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="user",
+     *         in="path",
+     *         required=true,
+     *         description="User ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="fname",       type="string",  example="Ali"),
+     *             @OA\Property(property="lname",       type="string",  example="Valiyev"),
+     *             @OA\Property(property="phone",       type="string",  example="+998901234567"),
+     *             @OA\Property(property="email",       type="string",  example="ali@example.com"),
+     *             @OA\Property(property="password",    type="string",  example="newpassword"),
+     *             @OA\Property(property="telegram",    type="string",  example="ali_uz"),
+     *             @OA\Property(property="telegram_id", type="integer", example=123456789),
+     *             @OA\Property(property="region_id",   type="integer", example=1),
+     *             @OA\Property(property="city_id",     type="integer", example=5),
+     *             @OA\Property(property="role",        type="string",  enum={"user","admin"}, example="user")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Yangilandi", @OA\JsonContent(ref="#/components/schemas/AdminUserDetailResponse")),
+     *     @OA\Response(response=404, description="Topilmadi"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden — faqat admin")
+     * )
+     */
+    private function _swaggerUpdate(): void {}
 
     /**
      * destroy() — DELETE /admin/users/{user}

@@ -47,7 +47,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
         Route::prefix('admin')->middleware('admin')->group(function () {
             Route::apiResource('categories', CategoryController::class);
             Route::apiResource('subcategories', SubCategoryController::class);
-            Route::apiResource('users', AdminUserController::class)->only(['index', 'show', 'destroy']);
+            Route::apiResource('users', AdminUserController::class);
         });
 
         Route::post('/logout', [AuthController::class, 'logout']);
