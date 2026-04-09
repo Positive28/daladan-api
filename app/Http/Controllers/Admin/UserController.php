@@ -186,7 +186,11 @@ class UserController extends Controller
      *             @OA\Property(property="role",        type="string",  enum={"user","admin"}, example="user")
      *         )
      *     ),
-     *     @OA\Response(response=201, description="Yaratildi", @OA\JsonContent(ref="#/components/schemas/AdminUserDetailResponse")),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Yaratildi",
+     *         @OA\JsonContent(ref="#/components/schemas/AdminUserDetailResponse")
+     *     ),
      *     @OA\Response(response=422, description="Validation error"),
      *     @OA\Response(response=401, description="Unauthorized"),
      *     @OA\Response(response=403, description="Forbidden — faqat admin")
@@ -223,7 +227,11 @@ class UserController extends Controller
      *             @OA\Property(property="role",        type="string",  enum={"user","admin"}, example="user")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Yangilandi", @OA\JsonContent(ref="#/components/schemas/AdminUserDetailResponse")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Yangilandi",
+     *         @OA\JsonContent(ref="#/components/schemas/AdminUserDetailResponse")
+     *     ),
      *     @OA\Response(response=404, description="Topilmadi"),
      *     @OA\Response(response=422, description="Validation error"),
      *     @OA\Response(response=401, description="Unauthorized"),
