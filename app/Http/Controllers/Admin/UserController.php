@@ -19,18 +19,27 @@ class UserController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $perPage = min(max((int) $request->input('per_page', 15), 1), 50);
+
         $users = User::query()
             ->with(['region:id,name_uz', 'city:id,name_uz'])
+            ->withCount('ads')
             ->where('role', User::ROLE_USER)
             ->orderByDesc('id')
-            ->paginate($request->input('per_page', 15));
+            ->paginate($perPage);
 
         return response()->successJson($users);
     }
 
     public function show(string $id): JsonResponse
     {
-        $user = User::with(['region:id,name_uz', 'city:id,name_uz', 'ads'])
+        $user = User::with([
+                'region:id,name_uz',
+                'city:id,name_uz',
+                'ads' => fn ($q) => $q->with(['category:id,name', 'subcategory:id,name'])
+                                      ->orderByDesc('created_at'),
+            ])
+            ->withCount('ads')
             ->where('role', User::ROLE_USER)
             ->find($id);
 
@@ -128,7 +137,7 @@ class UserController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Userlar ro'yxati (pagination)",
+     *         description="Userlar va ularning reklamalari (pagination)",
      *         @OA\JsonContent(ref="#/components/schemas/AdminUserListResponse")
      *     ),
      *     @OA\Response(response=401, description="Unauthorized"),
