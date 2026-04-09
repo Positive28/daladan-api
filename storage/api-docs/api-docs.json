@@ -584,6 +584,100 @@
                         "bearerAuth": []
                     }
                 ]
+            },
+            "post": {
+                "tags": [
+                    "Admin Users"
+                ],
+                "summary": "Yangi foydalanuvchi yaratish",
+                "description": "store() — POST /admin/users",
+                "operationId": "503cc8c7c3d2b4dea8ab2a9a2ce6e500",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phone",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "fname": {
+                                        "type": "string",
+                                        "example": "Ali"
+                                    },
+                                    "lname": {
+                                        "type": "string",
+                                        "example": "Valiyev"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+998901234567"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "ali@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "secret123"
+                                    },
+                                    "telegram": {
+                                        "type": "string",
+                                        "example": "ali_uz"
+                                    },
+                                    "telegram_id": {
+                                        "type": "integer",
+                                        "example": 123456789
+                                    },
+                                    "region_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "city_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "user",
+                                            "admin"
+                                        ],
+                                        "example": "user"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Yaratildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminUserDetailResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden — faqat admin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/admin/users/{user}": {
@@ -619,6 +713,111 @@
                     },
                     "404": {
                         "description": "Topilmadi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden — faqat admin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin Users"
+                ],
+                "summary": "Foydalanuvchini tahrirlash",
+                "description": "update() — PUT /admin/users/{user}",
+                "operationId": "0d47faf4a6f15919126ccf6ccfa4fdc3",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "fname": {
+                                        "type": "string",
+                                        "example": "Ali"
+                                    },
+                                    "lname": {
+                                        "type": "string",
+                                        "example": "Valiyev"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+998901234567"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "ali@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "newpassword"
+                                    },
+                                    "telegram": {
+                                        "type": "string",
+                                        "example": "ali_uz"
+                                    },
+                                    "telegram_id": {
+                                        "type": "integer",
+                                        "example": 123456789
+                                    },
+                                    "region_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "city_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "user",
+                                            "admin"
+                                        ],
+                                        "example": "user"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Yangilandi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminUserDetailResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Topilmadi"
+                    },
+                    "422": {
+                        "description": "Validation error"
                     },
                     "401": {
                         "description": "Unauthorized"

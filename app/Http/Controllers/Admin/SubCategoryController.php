@@ -10,6 +10,11 @@ use OpenApi\Annotations as OA;
 
 class SubCategoryController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['auth:api', 'admin']);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $subcategories = Subcategory::query()
