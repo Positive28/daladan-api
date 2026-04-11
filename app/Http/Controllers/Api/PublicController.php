@@ -4,12 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ad;
+use App\Services\AdViewService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Annotations as OA;
 
 class PublicController extends Controller
 {
+    public function __construct(
+        private readonly AdViewService $viewService
+    ) {}
+
     public function ads(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -34,7 +39,7 @@ class PublicController extends Controller
         return response()->successJson($ads);
     }
 
-    public function ad(string $id): JsonResponse
+    public function ad(Request $request, string $id): JsonResponse
     {
         $ad = Ad::with(['category:id,name', 'subcategory:id,name', 'seller.region', 'seller.city'])
             ->where('id', $id)
@@ -44,6 +49,9 @@ class PublicController extends Controller
         if (!$ad) {
             return response()->errorJson('E\'lon topilmadi yoki faol emas.', 404);
         }
+
+        $this->viewService->record($ad, $request);
+        $ad->refresh();
 
         return response()->successJson($ad);
     }

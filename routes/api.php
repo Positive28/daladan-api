@@ -41,6 +41,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
             Route::put('/password', [UserController::class, 'updatePassword']);
 
             Route::post('ads/{ad}', [AdsController::class, 'update']); // form-data + fayl uchun
+            Route::get('ads/{ad}/stats', [AdsController::class, 'viewStats']);
             Route::apiResource('ads', AdsController::class);
         });
 

@@ -97,4 +97,9 @@ class Ad extends Model implements HasMedia
     }
 
     protected $appends = ['media_list'];
+
+    public function views()
+    {
+        return $this->hasMany(AdView::class);
+    }
 }

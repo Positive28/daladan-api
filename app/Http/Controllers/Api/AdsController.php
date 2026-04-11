@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Ad;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use OpenApi\Annotations as OA;
@@ -172,6 +173,36 @@ class AdsController extends Controller
         $record->delete();
 
         return response()->successJson(['message' => 'E\'lon o\'chirildi.']);
+    }
+
+    public function viewStats(Ad $ad): JsonResponse
+    {
+        if ((int) $ad->seller_id !== (int) auth('api')->id()) {
+            return response()->errorJson('Ruxsat yo\'q', 403);
+        }
+
+        $ref = now();
+        $todayStart = $ref->copy()->startOfDay();
+        $todayEnd = $ref->copy()->endOfDay();
+        $weekAgo = $ref->copy()->subDays(7);
+        $monthAgo = $ref->copy()->subDays(30);
+
+        $row = DB::table('ad_views')
+            ->where('ad_id', $ad->id)
+            ->selectRaw(
+                'COUNT(*) FILTER (WHERE viewed_at >= ? AND viewed_at <= ?) AS today,
+                 COUNT(*) FILTER (WHERE viewed_at >= ?) AS weekly,
+                 COUNT(*) FILTER (WHERE viewed_at >= ?) AS monthly',
+                [$todayStart, $todayEnd, $weekAgo, $monthAgo]
+            )
+            ->first();
+
+        return response()->successJson([
+            'total'   => (int) $ad->views_count,
+            'today'   => (int) ($row?->today ?? 0),
+            'weekly'  => (int) ($row?->weekly ?? 0),
+            'monthly' => (int) ($row?->monthly ?? 0),
+        ]);
     }
 
     // =========================================================================
