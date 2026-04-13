@@ -352,6 +352,25 @@ class AdsController extends Controller
     private function _swaggerUpdate(): void {}
 
     /**
+     * viewStats() — GET /profile/ads/{ad}/stats
+     * @OA\Get(
+     *     path="/profile/ads/{ad}/stats",
+     *     tags={"Profile","Ads"},
+     *     summary="O'z e'loni ko'rishlar statistikasi",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="ad", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Ko'rishlar statistikasi",
+     *         @OA\JsonContent(ref="#/components/schemas/ProfileAdStatsSuccessResponse")
+     *     ),
+     *     @OA\Response(response=403, description="Ruxsat yo'q"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+    private function _swaggerViewStats(): void {}
+
+    /**
      * destroy() — DELETE /profile/ads/{ad}
      * @OA\Delete(
      *     path="/profile/ads/{ad}",
@@ -426,6 +445,20 @@ class AdsController extends Controller
      *         @OA\Property(property="per_page", type="integer", example=15),
      *         @OA\Property(property="total", type="integer", example=12),
      *         @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/ProfileAdResponseItem"))
+     *     )
+     * )
+     * @OA\Schema(
+     *     schema="ProfileAdStatsSuccessResponse",
+     *     type="object",
+     *     @OA\Property(property="success", type="boolean", example=true),
+     *     @OA\Property(property="message", type="string", example="ok"),
+     *     @OA\Property(
+     *         property="data",
+     *         type="object",
+     *         @OA\Property(property="total", type="integer", example=128),
+     *         @OA\Property(property="today", type="integer", example=12),
+     *         @OA\Property(property="weekly", type="integer", example=44),
+     *         @OA\Property(property="monthly", type="integer", example=96)
      *     )
      * )
      */
