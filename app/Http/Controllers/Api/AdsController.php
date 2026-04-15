@@ -63,7 +63,7 @@ class AdsController extends Controller
             'seller_id' => $user->id,
             'region_id' => $user->region_id,
             'city_id'   => $user->city_id,
-            'status'    => 'active',
+            'status'    => Ad::STATUS_PENDING,
         ]);
 
         if ($request->hasFile('media')) {
@@ -120,7 +120,7 @@ class AdsController extends Controller
             'price'              => 'nullable|integer|min:0',
             'quantity'           => 'nullable|numeric|min:0',
             'unit'               => 'nullable|string|max:20',
-            'status'             => 'sometimes|string|in:active,sold,deleted',
+            'status'             => 'sometimes|string|in:sold,deleted',
             'media'              => 'nullable|array',
             'media.*'            => 'file|mimetypes:image/jpeg,image/png,image/webp,video/mp4,video/quicktime|max:51200',
             'delete_media_ids'   => 'nullable|array',

@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('unit', 20)->nullable(); // kg, ton, bag, box, piece
 
             $table->string('status', 20)->default('active'); // active, sold, deleted
+            $table->text('reject_reason')->nullable();
             $table->boolean('is_top_sale')->default(false);
             $table->boolean('is_boosted')->default(false);
             $table->timestamp('boost_expires_at')->nullable();

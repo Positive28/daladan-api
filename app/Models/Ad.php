@@ -10,6 +10,12 @@ class Ad extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_REJECTED = 'rejected';
+    public const STATUS_SOLD = 'sold';
+    public const STATUS_DELETED = 'deleted';
+
     protected $fillable = [
         'seller_id',
         'category_id',
@@ -28,6 +34,7 @@ class Ad extends Model implements HasMedia
         'boost_expires_at',
         'views_count',
         'expires_at',
+        'reject_reason',
     ];
 
     protected function casts(): array
