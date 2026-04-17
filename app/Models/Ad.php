@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -31,6 +33,7 @@ class Ad extends Model implements HasMedia
         'status',
         'is_top_sale',
         'is_boosted',
+        'boost_starts_at',
         'boost_expires_at',
         'views_count',
         'expires_at',
@@ -43,6 +46,7 @@ class Ad extends Model implements HasMedia
             'is_top_sale'      => 'boolean',
             'is_boosted'       => 'boolean',
             'quantity'         => 'decimal:2',
+            'boost_starts_at'  => 'datetime',
             'boost_expires_at' => 'datetime',
             'expires_at'       => 'datetime',
         ];
@@ -76,6 +80,67 @@ class Ad extends Model implements HasMedia
     }
 
     // -------------------------------------------------------------------------
+    // Promo (top / boost) — ads jadvalida tez ishlatish; batafsil tarix ad_promotions da.
+    // -------------------------------------------------------------------------
+
+    /** Hozirgi vaqtda yorqinlik "ko'rinadigan" oynada ekanligi (tugash + boshlash). */
+    public function highlightIsLive(?Carbon $at = null): bool
+    {
+        $at ??= now();
+
+        if (!$this->boost_expires_at || $this->boost_expires_at->lte($at)) {
+            return false;
+        }
+
+        if ($this->boost_starts_at !== null && $this->boost_starts_at->gt($at)) {
+            return false;
+        }
+
+        return $this->is_top_sale || $this->is_boosted;
+    }
+
+    /** Oddiy tarif: ikkala tur o'chadi, muddat maydonlari null. */
+    public function clearHighlight(): void
+    {
+        $this->forceFill([
+            'is_top_sale' => false,
+            'is_boosted' => false,
+            'boost_starts_at' => null,
+            'boost_expires_at' => null,
+        ])->save();
+    }
+
+    /** Admin promo tasdiqidan keyin: plan turi bo'yicha bayroqlar + boost_starts_at / boost_expires_at. */
+    public function applyHighlightFromPlan(PromotionPlan $plan, Carbon $startsAt, Carbon $expiresAt): void
+    {
+        $this->forceFill([
+            'is_top_sale' => $plan->type === PromotionPlan::TYPE_TOP_SALE,
+            'is_boosted' => $plan->type === PromotionPlan::TYPE_BOOST,
+            'boost_starts_at' => $startsAt,
+            'boost_expires_at' => $expiresAt,
+        ])->save();
+    }
+
+    /** GET /public/ads: avval jonli boost, keyin top, qolganlari (keyin created_at). */
+    public function scopeOrderByLiveHighlight(Builder $query): Builder
+    {
+        $t = now()->format('Y-m-d H:i:s');
+
+        return $query->orderByRaw(
+            'CASE
+                WHEN is_boosted = 1
+                    AND (boost_starts_at IS NULL OR boost_starts_at <= ?)
+                    AND boost_expires_at > ? THEN 0
+                WHEN is_top_sale = 1
+                    AND (boost_starts_at IS NULL OR boost_starts_at <= ?)
+                    AND boost_expires_at > ? THEN 1
+                ELSE 2
+            END',
+            [$t, $t, $t, $t]
+        );
+    }
+
+    // -------------------------------------------------------------------------
 
     public function getRegionAttribute(): ?Region
     {
@@ -103,7 +168,13 @@ class Ad extends Model implements HasMedia
         ])->values()->toArray();
     }
 
-    protected $appends = ['media_list'];
+    protected $appends = ['media_list', 'highlight_active'];
+
+    /** Front uchun: highlightIsLive() ning qisqa nomi. */
+    public function getHighlightActiveAttribute(): bool
+    {
+        return $this->highlightIsLive();
+    }
 
     public function views()
     {

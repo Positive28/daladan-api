@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Category;
 use App\Models\Region;
+use App\Models\PromotionPlan;
 use App\Models\Subcategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -52,6 +53,31 @@ class ResourceController extends Controller
         }
 
         return response()->json($query->get(['id', 'category_id', 'name', 'slug']));
+    }
+
+    /**
+     * Tokensiz: sotuvchi forma uchun tariflar (narx, muddat, top_sale / boost).
+     * Buyurtma: POST /profile/ads/{ad}/promotions + promotion_plan_id.
+     */
+    public function promotionPlans(): JsonResponse
+    {
+        $plans = PromotionPlan::query()
+            ->where('is_active', true)
+            ->orderBy('type')
+            ->orderBy('sort_order')
+            ->get([
+                'id',
+                'name',
+                'slug',
+                'description',
+                'price',
+                'currency',
+                'duration_days',
+                'type',
+                'sort_order',
+            ]);
+
+        return response()->successJson($plans);
     }
 
     // =========================================================================
@@ -127,9 +153,30 @@ class ResourceController extends Controller
     private function _swaggerSubcategories(): void {}
 
     /**
+     * promotionPlans() — GET /resources/promotion-plans
+     * @OA\Get(
+     *     path="/resources/promotion-plans",
+     *     tags={"Resources"},
+     *     summary="Promo tariflar katalogi (tokensiz)",
+     *     description="promotion_plans jadvalidan faol qatorlar — keyin POST /profile/ads/{ad}/promotions uchun promotion_plan_id",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Tariflar ro'yxati",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="ok"),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/ResourcePromotionPlan"))
+     *         )
+     *     )
+     * )
+     */
+    private function _swaggerPromotionPlans(): void {}
+
+    /**
      * @OA\Tag(
      *     name="Resources",
-     *     description="Viloyat, tuman, kategoriya va subkategoriya resurslari"
+     *     description="Viloyat, tuman, kategoriya, subkategoriya va promo tariflari"
      * )
      * @OA\Schema(
      *     schema="ResourceCity",
@@ -161,6 +208,19 @@ class ResourceController extends Controller
      *     @OA\Property(property="category_id", type="integer", example=4),
      *     @OA\Property(property="name", type="string", example="Echkilar"),
      *     @OA\Property(property="slug", type="string", example="echkilar")
+     * )
+     * @OA\Schema(
+     *     schema="ResourcePromotionPlan",
+     *     type="object",
+     *     @OA\Property(property="id", type="integer", example=1),
+     *     @OA\Property(property="name", type="string", example="Top sotuv — 7 kun"),
+     *     @OA\Property(property="slug", type="string", example="top-sale-7d"),
+     *     @OA\Property(property="description", type="string", nullable=true),
+     *     @OA\Property(property="price", type="number", format="float", example=9000),
+     *     @OA\Property(property="currency", type="string", example="UZS"),
+     *     @OA\Property(property="duration_days", type="integer", example=7),
+     *     @OA\Property(property="type", type="string", enum={"top_sale","boost"}, example="top_sale"),
+     *     @OA\Property(property="sort_order", type="integer", example=1)
      * )
      */
     private function _swaggerSchemas(): void {}

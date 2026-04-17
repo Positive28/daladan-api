@@ -27,9 +27,11 @@ return new class extends Migration
 
             $table->string('status', 20)->default('active'); // active, sold, deleted
             $table->text('reject_reason')->nullable();
+            // Joriy promo holati (ro'yxat tartibi / filter). Batafsil tarix: ad_promotions.
             $table->boolean('is_top_sale')->default(false);
             $table->boolean('is_boosted')->default(false);
-            $table->timestamp('boost_expires_at')->nullable();
+            $table->timestamp('boost_starts_at')->nullable(); // odatda ertadan 00:00
+            $table->timestamp('boost_expires_at')->nullable(); // top va boost uchun umumiy tugash
             $table->unsignedInteger('views_count')->default(0);
             $table->timestamp('expires_at')->nullable();
 

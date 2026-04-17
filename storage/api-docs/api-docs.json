@@ -20,32 +20,67 @@
         }
     ],
     "paths": {
+        "/admin/ad-promotions/{promotion}/confirm": {
+            "patch": {
+                "tags": [
+                    "Admin Ads Moderation"
+                ],
+                "summary": "Pending promo buyurtmasini tasdiqlash (active + ads sinxron)",
+                "description": "Click/Payme dan keyin ixtiyoriy payment_transaction_id. Faqat pending holat.",
+                "operationId": "a64f01a395712e8faa8fc7bc32071769",
+                "parameters": [
+                    {
+                        "name": "promotion",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AdminAdPromotionConfirmPayload"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tasdiqlandi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminAdPromotionConfirmSuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Holat yoki validatsiya"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/admin/ads": {
             "get": {
                 "tags": [
                     "Admin Ads Moderation"
                 ],
-                "summary": "Moderatsiya uchun e'lonlar ro'yxati",
-                "description": "index() — GET /admin/ads",
+                "summary": "E'lonlar (moderatsiya ro'yxati)",
                 "operationId": "04ab4c0a8689b92228d972b957753b45",
                 "parameters": [
-                    {
-                        "name": "status",
-                        "in": "query",
-                        "description": "Filter status (default: pending)",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "pending",
-                                "active",
-                                "rejected",
-                                "sold",
-                                "deleted"
-                            ],
-                            "example": "pending"
-                        }
-                    },
                     {
                         "name": "per_page",
                         "in": "query",
@@ -54,24 +89,23 @@
                             "type": "integer",
                             "example": 15
                         }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "pending|active|rejected|sold|deleted",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "E'lonlar ro'yxati",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminCheckAdListResponse"
-                                }
-                            }
-                        }
+                        "description": "Paginatsiyali e'lonlar"
                     },
                     "401": {
                         "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -86,8 +120,7 @@
                 "tags": [
                     "Admin Ads Moderation"
                 ],
-                "summary": "Bitta e'lonni tekshirish",
-                "description": "show() — GET /admin/ads/{id}",
+                "summary": "Bitta e'lon",
                 "operationId": "e792fe7d9a47c0afe6270e0bd5d882c1",
                 "parameters": [
                     {
@@ -95,30 +128,19 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "example": 101
+                            "type": "integer"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "E'lon topildi",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminCheckAdResponse"
-                                }
-                            }
-                        }
+                        "description": "E'lon obyekti"
                     },
                     "404": {
-                        "description": "E'lon topilmadi"
+                        "description": "Topilmadi"
                     },
                     "401": {
                         "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -134,7 +156,6 @@
                     "Admin Ads Moderation"
                 ],
                 "summary": "Pending e'lonni tahrirlash",
-                "description": "update() — PATCH /admin/ads/{id}/edit (JSON yoki multipart/form-data + media)",
                 "operationId": "dbe7d9f37b42a0142581afd06bee84c2",
                 "parameters": [
                     {
@@ -142,95 +163,22 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "example": 101
+                            "type": "integer"
                         }
                     }
                 ],
-                "requestBody": {
-                    "required": false,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/AdminCheckAdUpdatePayload"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "properties": {
-                                    "category_id": {
-                                        "type": "integer",
-                                        "example": 4
-                                    },
-                                    "subcategory_id": {
-                                        "type": "integer",
-                                        "example": 11
-                                    },
-                                    "title": {
-                                        "type": "string"
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "district": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "price": {
-                                        "type": "integer",
-                                        "nullable": true
-                                    },
-                                    "quantity": {
-                                        "type": "number",
-                                        "format": "float",
-                                        "nullable": true
-                                    },
-                                    "unit": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "delete_media_ids": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "integer"
-                                        }
-                                    },
-                                    "media": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "format": "binary"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "200": {
-                        "description": "Yangilandi (status: pending)",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminCheckAdResponse"
-                                }
-                            }
-                        }
+                        "description": "Yangilangan e'lon"
+                    },
+                    "404": {
+                        "description": "Topilmadi"
                     },
                     "422": {
                         "description": "Faqat pending yoki validatsiya"
                     },
-                    "404": {
-                        "description": "E'lon topilmadi"
-                    },
                     "401": {
                         "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -245,8 +193,7 @@
                 "tags": [
                     "Admin Ads Moderation"
                 ],
-                "summary": "E'lonni tasdiqlash (active qilish)",
-                "description": "approve() — PATCH /admin/ads/{id}/approve",
+                "summary": "Pending e'lonni tasdiqlash (active)",
                 "operationId": "8536fb4ef276dba91492776ae8263015",
                 "parameters": [
                     {
@@ -254,33 +201,22 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "example": 101
+                            "type": "integer"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "E'lon tasdiqlandi",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminCheckActionResponse"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Faqat pending e'lon tasdiqlanadi"
+                        "description": "Tasdiq xabari"
                     },
                     "404": {
-                        "description": "E'lon topilmadi"
+                        "description": "Topilmadi"
+                    },
+                    "422": {
+                        "description": "Faqat pending"
                     },
                     "401": {
                         "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -295,8 +231,7 @@
                 "tags": [
                     "Admin Ads Moderation"
                 ],
-                "summary": "E'lonni rad etish va sabab yozish",
-                "description": "reject() — PATCH /admin/ads/{id}/reject",
+                "summary": "Pending e'lonni rad etish",
                 "operationId": "9413acf2f1dbe10615a6e62c08ca2ccb",
                 "parameters": [
                     {
@@ -304,8 +239,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "example": 101
+                            "type": "integer"
                         }
                     }
                 ],
@@ -314,33 +248,32 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/AdminCheckRejectPayload"
+                                "required": [
+                                    "reason"
+                                ],
+                                "properties": {
+                                    "reason": {
+                                        "type": "string",
+                                        "maxLength": 1000
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "E'lon rad etildi",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminCheckActionResponse"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Faqat pending yoki validatsiya"
+                        "description": "Rad etildi"
                     },
                     "404": {
-                        "description": "E'lon topilmadi"
+                        "description": "Topilmadi"
+                    },
+                    "422": {
+                        "description": "Faqat pending yoki reason yo'q"
                     },
                     "401": {
                         "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -877,7 +810,7 @@
                 "tags": [
                     "Admin Users"
                 ],
-                "summary": "Registratsiyadan o'tgan foydalanuvchilar ro'yxati",
+                "summary": "Barcha foydalanuvchilar ro'yxati (user va admin)",
                 "description": "index() — GET /admin/users",
                 "operationId": "92668189eb08693f4f652742a255b0b8",
                 "parameters": [
@@ -1219,6 +1152,73 @@
                     },
                     "403": {
                         "description": "Forbidden — faqat admin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/profile/ads/{ad}/promotions": {
+            "post": {
+                "tags": [
+                    "Profile",
+                    "Ads"
+                ],
+                "summary": "E'longa promo buyurtmasi (pending)",
+                "description": "Faqat o'z e'loniga. Keyin to'lov + admin PATCH /admin/ad-promotions/{promotion}/confirm.",
+                "operationId": "85256a9961dded30cd312dc050633cc0",
+                "parameters": [
+                    {
+                        "name": "ad",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "promotion_plan_id"
+                                ],
+                                "properties": {
+                                    "promotion_plan_id": {
+                                        "description": "GET /resources/promotion-plans",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Buyurtma yaratildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdPromotionStoreSuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "E'lon topilmadi"
+                    },
+                    "422": {
+                        "description": "Validatsiya yoki biznes qoidasi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     }
                 },
                 "security": [
@@ -2258,6 +2258,44 @@
                 }
             }
         },
+        "/resources/promotion-plans": {
+            "get": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Promo tariflar katalogi (tokensiz)",
+                "description": "promotion_plans jadvalidan faol qatorlar — keyin POST /profile/ads/{ad}/promotions uchun promotion_plan_id",
+                "operationId": "683c13cc0dbe9c6b592059a708a43afb",
+                "responses": {
+                    "200": {
+                        "description": "Tariflar ro'yxati",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ResourcePromotionPlan"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/profile": {
             "get": {
                 "tags": [
@@ -2485,120 +2523,22 @@
     },
     "components": {
         "schemas": {
-            "AdminCheckAdUpdatePayload": {
+            "AdminAdPromotionConfirmPayload": {
                 "properties": {
-                    "category_id": {
-                        "type": "integer",
-                        "example": 4
-                    },
-                    "subcategory_id": {
-                        "type": "integer",
-                        "example": 11
-                    },
-                    "title": {
-                        "type": "string",
-                        "maxLength": 150
-                    },
-                    "description": {
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "district": {
+                    "payment_transaction_id": {
                         "type": "string",
                         "maxLength": 100,
-                        "nullable": true
-                    },
-                    "price": {
-                        "type": "integer",
-                        "nullable": true
-                    },
-                    "quantity": {
-                        "type": "number",
-                        "format": "float",
-                        "nullable": true
-                    },
-                    "unit": {
-                        "type": "string",
-                        "maxLength": 20,
-                        "nullable": true
-                    },
-                    "delete_media_ids": {
-                        "type": "array",
-                        "items": {
-                            "type": "integer"
-                        }
-                    }
-                },
-                "type": "object"
-            },
-            "AdminCheckRejectPayload": {
-                "required": [
-                    "reason"
-                ],
-                "properties": {
-                    "reason": {
-                        "type": "string",
-                        "maxLength": 1000,
-                        "example": "Qoidaga zid kontent."
-                    }
-                },
-                "type": "object"
-            },
-            "AdminCheckActionData": {
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "example": "E'lon tasdiqlandi."
-                    },
-                    "status": {
-                        "type": "string",
-                        "example": "active"
-                    },
-                    "ad_id": {
-                        "type": "integer",
-                        "example": 101
-                    },
-                    "reject_reason": {
-                        "type": "string",
-                        "example": null,
+                        "example": "click_abc123",
                         "nullable": true
                     }
                 },
                 "type": "object"
             },
-            "AdminCheckActionResponse": {
-                "properties": {
-                    "success": {
-                        "type": "boolean",
-                        "example": true
-                    },
-                    "message": {
-                        "type": "string",
-                        "example": "ok"
-                    },
-                    "data": {
-                        "$ref": "#/components/schemas/AdminCheckActionData"
-                    }
-                },
-                "type": "object"
-            },
-            "AdminCheckAd": {
+            "AdminAdPromotionAdSnippet": {
                 "properties": {
                     "id": {
                         "type": "integer",
                         "example": 101
-                    },
-                    "seller_id": {
-                        "type": "integer",
-                        "example": 12
-                    },
-                    "category_id": {
-                        "type": "integer",
-                        "example": 4
-                    },
-                    "subcategory_id": {
-                        "type": "integer",
-                        "example": 11
                     },
                     "title": {
                         "type": "string",
@@ -2606,25 +2546,110 @@
                     },
                     "status": {
                         "type": "string",
-                        "example": "pending"
+                        "example": "active"
+                    }
+                },
+                "type": "object"
+            },
+            "AdminAdPromotionPlanSnippet": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
                     },
-                    "reject_reason": {
+                    "name": {
                         "type": "string",
-                        "example": "Qoidaga zid kontent.",
+                        "example": "Top sotuv — 7 kun"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "top-sale-7d"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "top_sale",
+                            "boost"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "AdminAdPromotionUserSnippet": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+998901234567"
+                    },
+                    "fname": {
+                        "type": "string",
+                        "example": "Ali"
+                    }
+                },
+                "type": "object"
+            },
+            "AdminAdPromotionDetail": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "ad_id": {
+                        "type": "integer",
+                        "example": 101
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "promotion_plan_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "amount_paid": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 9000
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "UZS"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time",
                         "nullable": true
                     },
-                    "created_at": {
+                    "expires_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "nullable": true
                     },
-                    "updated_at": {
+                    "status": {
                         "type": "string",
-                        "format": "date-time"
+                        "example": "active"
+                    },
+                    "payment_transaction_id": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "ad": {
+                        "$ref": "#/components/schemas/AdminAdPromotionAdSnippet"
+                    },
+                    "promotion_plan": {
+                        "$ref": "#/components/schemas/AdminAdPromotionPlanSnippet"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/AdminAdPromotionUserSnippet"
                     }
                 },
                 "type": "object"
             },
-            "AdminCheckAdResponse": {
+            "AdminAdPromotionConfirmSuccessResponse": {
                 "properties": {
                     "success": {
                         "type": "boolean",
@@ -2635,43 +2660,7 @@
                         "example": "ok"
                     },
                     "data": {
-                        "$ref": "#/components/schemas/AdminCheckAd"
-                    }
-                },
-                "type": "object"
-            },
-            "AdminCheckAdListResponse": {
-                "properties": {
-                    "success": {
-                        "type": "boolean",
-                        "example": true
-                    },
-                    "message": {
-                        "type": "string",
-                        "example": "ok"
-                    },
-                    "data": {
-                        "properties": {
-                            "current_page": {
-                                "type": "integer",
-                                "example": 1
-                            },
-                            "per_page": {
-                                "type": "integer",
-                                "example": 15
-                            },
-                            "total": {
-                                "type": "integer",
-                                "example": 42
-                            },
-                            "data": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/AdminCheckAd"
-                                }
-                            }
-                        },
-                        "type": "object"
+                        "$ref": "#/components/schemas/AdminAdPromotionDetail"
                     }
                 },
                 "type": "object"
@@ -3077,6 +3066,125 @@
                 },
                 "type": "object"
             },
+            "AdPromotionPlanSummary": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Top sotuv — 7 kun"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "top-sale-7d"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "top_sale",
+                            "boost"
+                        ]
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 9000
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "UZS"
+                    },
+                    "duration_days": {
+                        "type": "integer",
+                        "example": 7
+                    }
+                },
+                "type": "object"
+            },
+            "AdPromotionOrderItem": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "ad_id": {
+                        "type": "integer",
+                        "example": 101
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "promotion_plan_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "amount_paid": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 9000
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "UZS"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "paid",
+                            "active",
+                            "expired",
+                            "cancelled"
+                        ],
+                        "example": "pending"
+                    },
+                    "payment_transaction_id": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "promotion_plan": {
+                        "$ref": "#/components/schemas/AdPromotionPlanSummary"
+                    }
+                },
+                "type": "object"
+            },
+            "AdPromotionStoreSuccessResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/AdPromotionOrderItem"
+                    }
+                },
+                "type": "object"
+            },
             "ProfileAdsPayload": {
                 "properties": {
                     "category_id": {
@@ -3391,6 +3499,28 @@
                         "type": "string",
                         "example": "active"
                     },
+                    "is_top_sale": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "is_boosted": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "boost_starts_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "boost_expires_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "highlight_active": {
+                        "type": "boolean",
+                        "example": false
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time"
@@ -3532,6 +3662,52 @@
                 },
                 "type": "object"
             },
+            "ResourcePromotionPlan": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Top sotuv — 7 kun"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "top-sale-7d"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 9000
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "UZS"
+                    },
+                    "duration_days": {
+                        "type": "integer",
+                        "example": 7
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "top_sale",
+                            "boost"
+                        ],
+                        "example": "top_sale"
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
             "ProfileAdShort": {
                 "properties": {
                     "id": {
@@ -3647,10 +3823,6 @@
     },
     "tags": [
         {
-            "name": "Admin Ads Moderation",
-            "description": "Admin tomonidan e'lonlarni ko'rish, tahrirlash (pending), tasdiqlash/rad etish"
-        },
-        {
             "name": "Admin Categories",
             "description": "Admin panel uchun category CRUD endpointlari"
         },
@@ -3668,11 +3840,15 @@
         },
         {
             "name": "Resources",
-            "description": "Viloyat, tuman, kategoriya va subkategoriya resurslari"
+            "description": "Viloyat, tuman, kategoriya, subkategoriya va promo tariflari"
         },
         {
             "name": "Profile",
             "description": "Autentifikatsiyalangan foydalanuvchi profili"
+        },
+        {
+            "name": "Admin Ads Moderation",
+            "description": "Admin Ads Moderation"
         },
         {
             "name": "Ads",

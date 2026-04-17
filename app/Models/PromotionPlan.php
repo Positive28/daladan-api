@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Katalog qatori: narx, muddat (kun), tur (top_sale | boost).
+ * Sotuvchi buyurtmada promotion_plan_id beradi; admin tasdiqda AdPromotionService vaqt oynasini hisoblaydi.
+ */
 class PromotionPlan extends Model
 {
     public const TYPE_TOP_SALE = 'top_sale';

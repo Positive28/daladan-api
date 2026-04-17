@@ -1,12 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AdPromotionController;
 use App\Http\Controllers\Api\AdsController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Admin\AdminAdPromotionController;
 use App\Http\Controllers\Admin\AdminCheckController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\SubCategoryController;
@@ -27,6 +29,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
         Route::get('/cities', 'cities');
         Route::get('/categories', 'categories');
         Route::get('/subcategories', 'subcategories');
+        // Promo tariflari katalogi (promotion_plans) — tokensiz.
+        Route::get('/promotion-plans', 'promotionPlans');
     });
 
     Route::prefix('public')->controller(PublicController::class)->group(function () {
@@ -45,6 +49,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
             Route::post('/favorites/{ad}', [FavoriteController::class, 'store']);
             Route::delete('/favorites/{ad}', [FavoriteController::class, 'destroy']);
 
+            // Active e'longa pending promo buyurtmasi (ad_promotions) — keyin admin confirm.
+            Route::post('ads/{ad}/promotions', [AdPromotionController::class, 'store']);
             Route::post('ads/{ad}', [AdsController::class, 'update']); // form-data + fayl uchun
             Route::get('ads/{ad}/stats', [AdsController::class, 'viewStats']);
             Route::apiResource('ads', AdsController::class);
@@ -57,6 +63,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
             Route::patch('ads/{id}/edit', [AdminCheckController::class, 'update']);
             Route::patch('ads/{id}/approve', [AdminCheckController::class, 'approve']);
             Route::patch('ads/{id}/reject', [AdminCheckController::class, 'reject']);
+            // To'lov tekshirilgach: pending → active + ads sinxron.
+            Route::patch('ad-promotions/{promotion}/confirm', [AdminAdPromotionController::class, 'confirm']);
             Route::apiResource('categories', CategoryController::class);
             Route::apiResource('subcategories', SubCategoryController::class);
             Route::apiResource('users', AdminUserController::class);

@@ -19,22 +19,21 @@ class AdminCheckController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->input('per_page', 15), 1), 50);
-        $allowedStatuses = [
+        $allowed = [
             Ad::STATUS_PENDING,
             Ad::STATUS_ACTIVE,
             Ad::STATUS_REJECTED,
             Ad::STATUS_SOLD,
             Ad::STATUS_DELETED,
         ];
-
         $status = (string) $request->input('status', Ad::STATUS_PENDING);
 
         $ads = Ad::query()
             ->with(['seller:id,fname,lname,phone', 'category:id,name', 'subcategory:id,name'])
             ->when(
-                in_array($status, $allowedStatuses, true),
-                fn ($query) => $query->where('status', $status),
-                fn ($query) => $query->where('status', Ad::STATUS_PENDING)
+                in_array($status, $allowed, true),
+                fn ($q) => $q->where('status', $status),
+                fn ($q) => $q->where('status', Ad::STATUS_PENDING)
             )
             ->orderByDesc('created_at')
             ->paginate($perPage);
@@ -55,6 +54,10 @@ class AdminCheckController extends Controller
         return response()->successJson($ad);
     }
 
+    /**
+     * Moderatsiya: pending → active. Promo avtomatik yoqilmaydi;
+     * keyin sotuvchi promotion_plan buyurtma qiladi va admin confirm qiladi.
+     */
     public function approve(string $id): JsonResponse
     {
         $ad = Ad::find($id);
@@ -108,9 +111,6 @@ class AdminCheckController extends Controller
         ]);
     }
 
-    /**
-     * Pending e'lonni tahrirlash (status pending bo'lib qoladi).
-     */
     public function update(Request $request, string $id): JsonResponse
     {
         $record = Ad::find($id);
@@ -174,218 +174,76 @@ class AdminCheckController extends Controller
     }
 
     /**
-     * index() — GET /admin/ads
      * @OA\Get(
      *     path="/admin/ads",
      *     tags={"Admin Ads Moderation"},
-     *     summary="Moderatsiya uchun e'lonlar ro'yxati",
+     *     summary="E'lonlar (moderatsiya ro'yxati)",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="status",
-     *         in="query",
-     *         required=false,
-     *         description="Filter status (default: pending)",
-     *         @OA\Schema(type="string", enum={"pending","active","rejected","sold","deleted"}, example="pending")
-     *     ),
-     *     @OA\Parameter(
-     *         name="per_page",
-     *         in="query",
-     *         required=false,
-     *         @OA\Schema(type="integer", example=15)
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="E'lonlar ro'yxati",
-     *         @OA\JsonContent(ref="#/components/schemas/AdminCheckAdListResponse")
-     *     ),
-     *     @OA\Response(response=401, description="Unauthorized"),
-     *     @OA\Response(response=403, description="Forbidden")
+     *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", example=15)),
+     *     @OA\Parameter(name="status", in="query", required=false, description="pending|active|rejected|sold|deleted", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Paginatsiyali e'lonlar"),
+     *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
     private function _swaggerIndex(): void {}
 
     /**
-     * show() — GET /admin/ads/{id}
      * @OA\Get(
      *     path="/admin/ads/{id}",
      *     tags={"Admin Ads Moderation"},
-     *     summary="Bitta e'lonni tekshirish",
+     *     summary="Bitta e'lon",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=101)),
-     *     @OA\Response(
-     *         response=200,
-     *         description="E'lon topildi",
-     *         @OA\JsonContent(ref="#/components/schemas/AdminCheckAdResponse")
-     *     ),
-     *     @OA\Response(response=404, description="E'lon topilmadi"),
-     *     @OA\Response(response=401, description="Unauthorized"),
-     *     @OA\Response(response=403, description="Forbidden")
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="E'lon obyekti"),
+     *     @OA\Response(response=404, description="Topilmadi"),
+     *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
     private function _swaggerShow(): void {}
 
     /**
-     * update() — PATCH /admin/ads/{id}/edit (JSON yoki multipart/form-data + media)
      * @OA\Patch(
      *     path="/admin/ads/{id}/edit",
      *     tags={"Admin Ads Moderation"},
      *     summary="Pending e'lonni tahrirlash",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=101)),
-     *     @OA\RequestBody(
-     *         required=false,
-     *         @OA\MediaType(
-     *             mediaType="application/json",
-     *             @OA\Schema(ref="#/components/schemas/AdminCheckAdUpdatePayload")
-     *         ),
-     *         @OA\MediaType(
-     *             mediaType="multipart/form-data",
-     *             @OA\Schema(
-     *                 @OA\Property(property="category_id", type="integer", example=4),
-     *                 @OA\Property(property="subcategory_id", type="integer", example=11),
-     *                 @OA\Property(property="title", type="string"),
-     *                 @OA\Property(property="description", type="string", nullable=true),
-     *                 @OA\Property(property="district", type="string", nullable=true),
-     *                 @OA\Property(property="price", type="integer", nullable=true),
-     *                 @OA\Property(property="quantity", type="number", format="float", nullable=true),
-     *                 @OA\Property(property="unit", type="string", nullable=true),
-     *                 @OA\Property(property="delete_media_ids", type="array", @OA\Items(type="integer")),
-     *                 @OA\Property(property="media", type="array", @OA\Items(type="string", format="binary"))
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Yangilandi (status: pending)",
-     *         @OA\JsonContent(ref="#/components/schemas/AdminCheckAdResponse")
-     *     ),
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Yangilangan e'lon"),
+     *     @OA\Response(response=404, description="Topilmadi"),
      *     @OA\Response(response=422, description="Faqat pending yoki validatsiya"),
-     *     @OA\Response(response=404, description="E'lon topilmadi"),
-     *     @OA\Response(response=401, description="Unauthorized"),
-     *     @OA\Response(response=403, description="Forbidden")
+     *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
     private function _swaggerUpdate(): void {}
 
     /**
-     * approve() — PATCH /admin/ads/{id}/approve
      * @OA\Patch(
      *     path="/admin/ads/{id}/approve",
      *     tags={"Admin Ads Moderation"},
-     *     summary="E'lonni tasdiqlash (active qilish)",
+     *     summary="Pending e'lonni tasdiqlash (active)",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=101)),
-     *     @OA\Response(
-     *         response=200,
-     *         description="E'lon tasdiqlandi",
-     *         @OA\JsonContent(ref="#/components/schemas/AdminCheckActionResponse")
-     *     ),
-     *     @OA\Response(response=422, description="Faqat pending e'lon tasdiqlanadi"),
-     *     @OA\Response(response=404, description="E'lon topilmadi"),
-     *     @OA\Response(response=401, description="Unauthorized"),
-     *     @OA\Response(response=403, description="Forbidden")
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Tasdiq xabari"),
+     *     @OA\Response(response=404, description="Topilmadi"),
+     *     @OA\Response(response=422, description="Faqat pending"),
+     *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
     private function _swaggerApprove(): void {}
 
     /**
-     * reject() — PATCH /admin/ads/{id}/reject
      * @OA\Patch(
      *     path="/admin/ads/{id}/reject",
      *     tags={"Admin Ads Moderation"},
-     *     summary="E'lonni rad etish va sabab yozish",
+     *     summary="Pending e'lonni rad etish",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=101)),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/AdminCheckRejectPayload")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="E'lon rad etildi",
-     *         @OA\JsonContent(ref="#/components/schemas/AdminCheckActionResponse")
-     *     ),
-     *     @OA\Response(response=422, description="Faqat pending yoki validatsiya"),
-     *     @OA\Response(response=404, description="E'lon topilmadi"),
-     *     @OA\Response(response=401, description="Unauthorized"),
-     *     @OA\Response(response=403, description="Forbidden")
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(required={"reason"}, @OA\Property(property="reason", type="string", maxLength=1000))),
+     *     @OA\Response(response=200, description="Rad etildi"),
+     *     @OA\Response(response=404, description="Topilmadi"),
+     *     @OA\Response(response=422, description="Faqat pending yoki reason yo'q"),
+     *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
     private function _swaggerReject(): void {}
-
-    /**
-     * @OA\Tag(
-     *     name="Admin Ads Moderation",
-     *     description="Admin tomonidan e'lonlarni ko'rish, tahrirlash (pending), tasdiqlash/rad etish"
-     * )
-     * @OA\Schema(
-     *     schema="AdminCheckAdUpdatePayload",
-     *     type="object",
-     *     @OA\Property(property="category_id", type="integer", example=4),
-     *     @OA\Property(property="subcategory_id", type="integer", example=11),
-     *     @OA\Property(property="title", type="string", maxLength=150),
-     *     @OA\Property(property="description", type="string", nullable=true),
-     *     @OA\Property(property="district", type="string", nullable=true, maxLength=100),
-     *     @OA\Property(property="price", type="integer", nullable=true),
-     *     @OA\Property(property="quantity", type="number", format="float", nullable=true),
-     *     @OA\Property(property="unit", type="string", nullable=true, maxLength=20),
-     *     @OA\Property(property="delete_media_ids", type="array", @OA\Items(type="integer"))
-     * )
-     * @OA\Schema(
-     *     schema="AdminCheckRejectPayload",
-     *     type="object",
-     *     required={"reason"},
-     *     @OA\Property(property="reason", type="string", maxLength=1000, example="Qoidaga zid kontent.")
-     * )
-     * @OA\Schema(
-     *     schema="AdminCheckActionData",
-     *     type="object",
-     *     @OA\Property(property="message", type="string", example="E'lon tasdiqlandi."),
-     *     @OA\Property(property="status", type="string", example="active"),
-     *     @OA\Property(property="ad_id", type="integer", example=101),
-     *     @OA\Property(property="reject_reason", type="string", nullable=true, example=null)
-     * )
-     * @OA\Schema(
-     *     schema="AdminCheckActionResponse",
-     *     type="object",
-     *     @OA\Property(property="success", type="boolean", example=true),
-     *     @OA\Property(property="message", type="string", example="ok"),
-     *     @OA\Property(property="data", ref="#/components/schemas/AdminCheckActionData")
-     * )
-     * @OA\Schema(
-     *     schema="AdminCheckAd",
-     *     type="object",
-     *     @OA\Property(property="id", type="integer", example=101),
-     *     @OA\Property(property="seller_id", type="integer", example=12),
-     *     @OA\Property(property="category_id", type="integer", example=4),
-     *     @OA\Property(property="subcategory_id", type="integer", example=11),
-     *     @OA\Property(property="title", type="string", example="Naslli echkilar"),
-     *     @OA\Property(property="status", type="string", example="pending"),
-     *     @OA\Property(property="reject_reason", type="string", nullable=true, example="Qoidaga zid kontent."),
-     *     @OA\Property(property="created_at", type="string", format="date-time"),
-     *     @OA\Property(property="updated_at", type="string", format="date-time")
-     * )
-     * @OA\Schema(
-     *     schema="AdminCheckAdResponse",
-     *     type="object",
-     *     @OA\Property(property="success", type="boolean", example=true),
-     *     @OA\Property(property="message", type="string", example="ok"),
-     *     @OA\Property(property="data", ref="#/components/schemas/AdminCheckAd")
-     * )
-     * @OA\Schema(
-     *     schema="AdminCheckAdListResponse",
-     *     type="object",
-     *     @OA\Property(property="success", type="boolean", example=true),
-     *     @OA\Property(property="message", type="string", example="ok"),
-     *     @OA\Property(
-     *         property="data",
-     *         type="object",
-     *         @OA\Property(property="current_page", type="integer", example=1),
-     *         @OA\Property(property="per_page", type="integer", example=15),
-     *         @OA\Property(property="total", type="integer", example=42),
-     *         @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/AdminCheckAd"))
-     *     )
-     * )
-     */
-    private function _swaggerSchemas(): void {}
 }

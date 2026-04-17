@@ -34,7 +34,11 @@ class PublicController extends Controller
         }
 
         $perPage = min(max((int) $request->input('per_page', 15), 1), 50);
-        $ads = $query->orderByDesc('created_at')->paginate($perPage);
+        // Avval jonli boost, keyin top (ads ustunlari bo'yicha), keyin yangi e'lonlar.
+        $ads = $query
+            ->orderByLiveHighlight()
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
 
         return response()->successJson($ads);
     }
@@ -116,6 +120,11 @@ class PublicController extends Controller
      *     @OA\Property(property="quantity", type="number", format="float", nullable=true, example=12),
      *     @OA\Property(property="unit", type="string", nullable=true, example="piece"),
      *     @OA\Property(property="status", type="string", example="active"),
+     *     @OA\Property(property="is_top_sale", type="boolean", example=false),
+     *     @OA\Property(property="is_boosted", type="boolean", example=false),
+     *     @OA\Property(property="boost_starts_at", type="string", format="date-time", nullable=true),
+     *     @OA\Property(property="boost_expires_at", type="string", format="date-time", nullable=true),
+     *     @OA\Property(property="highlight_active", type="boolean", example=false),
      *     @OA\Property(property="created_at", type="string", format="date-time")
      * )
      * @OA\Schema(
