@@ -24,7 +24,6 @@ class UserController extends Controller
         $users = User::query()
             ->with(['region:id,name_uz', 'city:id,name_uz'])
             ->withCount('ads')
-            ->where('role', User::ROLE_USER)
             ->orderByDesc('id')
             ->paginate($perPage);
 
@@ -40,7 +39,6 @@ class UserController extends Controller
                                       ->orderByDesc('created_at'),
             ])
             ->withCount('ads')
-            ->where('role', User::ROLE_USER)
             ->find($id);
 
         if (!$user) {
@@ -76,7 +74,7 @@ class UserController extends Controller
 
     public function update(Request $request, string $id): JsonResponse
     {
-        $user = User::where('role', User::ROLE_USER)->find($id);
+        $user = User::find($id);
 
         if (!$user) {
             return response()->errorJson('Foydalanuvchi topilmadi.', 404);
@@ -107,7 +105,7 @@ class UserController extends Controller
 
     public function destroy(string $id): JsonResponse
     {
-        $user = User::where('role', User::ROLE_USER)->find($id);
+        $user = User::find($id);
 
         if (!$user) {
             return response()->errorJson('Foydalanuvchi topilmadi.', 404);
@@ -127,7 +125,7 @@ class UserController extends Controller
      * @OA\Get(
      *     path="/admin/users",
      *     tags={"Admin Users"},
-     *     summary="Registratsiyadan o'tgan foydalanuvchilar ro'yxati",
+     *     summary="Barcha foydalanuvchilar ro'yxati (user va admin)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="per_page",
