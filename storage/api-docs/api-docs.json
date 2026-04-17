@@ -296,9 +296,9 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/AdminCategoryPayload"
+                                "$ref": "#/components/schemas/AdminCategoryStorePayload"
                             }
                         }
                     }
@@ -392,11 +392,11 @@
                     }
                 ],
                 "requestBody": {
-                    "required": true,
+                    "required": false,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/AdminCategoryPayload"
+                                "$ref": "#/components/schemas/AdminCategoryUpdatePayload"
                             }
                         }
                     }
@@ -2448,6 +2448,11 @@
                         "type": "boolean",
                         "example": true
                     },
+                    "image_url": {
+                        "type": "string",
+                        "example": "http://localhost/storage/1/category-image.jpg",
+                        "nullable": true
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time",
@@ -2461,7 +2466,7 @@
                 },
                 "type": "object"
             },
-            "AdminCategoryPayload": {
+            "AdminCategoryStorePayload": {
                 "required": [
                     "name",
                     "slug",
@@ -2486,6 +2491,40 @@
                     "is_active": {
                         "type": "boolean",
                         "example": true
+                    },
+                    "image": {
+                        "type": "string",
+                        "format": "binary",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AdminCategoryUpdatePayload": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "example": "Chorva hayvonlari"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "example": "chorva-hayvonlari"
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 4,
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "image": {
+                        "type": "string",
+                        "format": "binary",
+                        "nullable": true
                     }
                 },
                 "type": "object"

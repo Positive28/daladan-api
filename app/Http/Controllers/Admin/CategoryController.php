@@ -35,9 +35,15 @@ class CategoryController extends Controller
             'slug' => 'required|string|max:80|unique:categories,slug',
             'sort_order' => 'nullable|integer',
             'is_active' => 'required|boolean',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
+        unset($validated['image']);
         $category = Category::create($validated);
+        if ($request->hasFile('image')) {
+            $category->addMediaFromRequest('image')->toMediaCollection('image');
+            $category->refresh();
+        }
 
         return response()->json(response()->successJson($category), 201);
     }
@@ -54,9 +60,15 @@ class CategoryController extends Controller
             'slug' => 'sometimes|required|string|max:80|unique:categories,slug,' . $category->id,
             'sort_order' => 'nullable|integer',
             'is_active' => 'sometimes|required|boolean',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
+        unset($validated['image']);
         $category->update($validated);
+        if ($request->hasFile('image')) {
+            $category->addMediaFromRequest('image')->toMediaCollection('image');
+            $category->refresh();
+        }
 
         return response()->json(response()->successJson($category));
     }
@@ -108,7 +120,10 @@ class CategoryController extends Controller
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/AdminCategoryPayload")
+ *         @OA\MediaType(
+ *             mediaType="multipart/form-data",
+ *             @OA\Schema(ref="#/components/schemas/AdminCategoryStorePayload")
+ *         )
      *     ),
      *     @OA\Response(
      *         response=201,
@@ -161,8 +176,11 @@ class CategoryController extends Controller
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/AdminCategoryPayload")
+ *         required=false,
+ *         @OA\MediaType(
+ *             mediaType="multipart/form-data",
+ *             @OA\Schema(ref="#/components/schemas/AdminCategoryUpdatePayload")
+ *         )
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -224,17 +242,28 @@ class CategoryController extends Controller
      *     @OA\Property(property="slug", type="string", example="chorva-hayvonlari"),
      *     @OA\Property(property="sort_order", type="integer", nullable=true, example=4),
      *     @OA\Property(property="is_active", type="boolean", example=true),
+ *     @OA\Property(property="image_url", type="string", nullable=true, example="http://localhost/storage/1/category-image.jpg"),
      *     @OA\Property(property="created_at", type="string", format="date-time", example="2026-03-18T10:00:00Z"),
      *     @OA\Property(property="updated_at", type="string", format="date-time", example="2026-03-18T10:00:00Z")
      * )
      * @OA\Schema(
-     *     schema="AdminCategoryPayload",
+ *     schema="AdminCategoryStorePayload",
      *     type="object",
      *     required={"name","slug","is_active"},
      *     @OA\Property(property="name", type="string", maxLength=80, example="Chorva hayvonlari"),
      *     @OA\Property(property="slug", type="string", maxLength=80, example="chorva-hayvonlari"),
      *     @OA\Property(property="sort_order", type="integer", nullable=true, example=4),
-     *     @OA\Property(property="is_active", type="boolean", example=true)
+ *     @OA\Property(property="is_active", type="boolean", example=true),
+ *     @OA\Property(property="image", type="string", format="binary", nullable=true)
+ * )
+ * @OA\Schema(
+ *     schema="AdminCategoryUpdatePayload",
+ *     type="object",
+ *     @OA\Property(property="name", type="string", maxLength=80, example="Chorva hayvonlari"),
+ *     @OA\Property(property="slug", type="string", maxLength=80, example="chorva-hayvonlari"),
+ *     @OA\Property(property="sort_order", type="integer", nullable=true, example=4),
+ *     @OA\Property(property="is_active", type="boolean", example=true),
+ *     @OA\Property(property="image", type="string", format="binary", nullable=true)
      * )
      * @OA\Schema(
      *     schema="AdminCategoryResponse",
