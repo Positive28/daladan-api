@@ -128,6 +128,118 @@
                 ]
             }
         },
+        "/admin/ads/{id}/edit": {
+            "patch": {
+                "tags": [
+                    "Admin Ads Moderation"
+                ],
+                "summary": "Pending e'lonni tahrirlash",
+                "description": "update() — PATCH /admin/ads/{id}/edit (JSON yoki multipart/form-data + media)",
+                "operationId": "dbe7d9f37b42a0142581afd06bee84c2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 101
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AdminCheckAdUpdatePayload"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 4
+                                    },
+                                    "subcategory_id": {
+                                        "type": "integer",
+                                        "example": 11
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "district": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "price": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "quantity": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "nullable": true
+                                    },
+                                    "unit": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "delete_media_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "media": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Yangilandi (status: pending)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminCheckAdResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Faqat pending yoki validatsiya"
+                    },
+                    "404": {
+                        "description": "E'lon topilmadi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/admin/ads/{id}/approve": {
             "patch": {
                 "tags": [
@@ -157,6 +269,9 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "description": "Faqat pending e'lon tasdiqlanadi"
                     },
                     "404": {
                         "description": "E'lon topilmadi"
@@ -216,7 +331,7 @@
                         }
                     },
                     "422": {
-                        "description": "Validatsiya xatosi"
+                        "description": "Faqat pending yoki validatsiya"
                     },
                     "404": {
                         "description": "E'lon topilmadi"
@@ -2370,6 +2485,52 @@
     },
     "components": {
         "schemas": {
+            "AdminCheckAdUpdatePayload": {
+                "properties": {
+                    "category_id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "subcategory_id": {
+                        "type": "integer",
+                        "example": 11
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 150
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "district": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "nullable": true
+                    },
+                    "price": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "quantity": {
+                        "type": "number",
+                        "format": "float",
+                        "nullable": true
+                    },
+                    "unit": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "nullable": true
+                    },
+                    "delete_media_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "AdminCheckRejectPayload": {
                 "required": [
                     "reason"
@@ -3487,7 +3648,7 @@
     "tags": [
         {
             "name": "Admin Ads Moderation",
-            "description": "Admin tomonidan e'lonlarni tasdiqlash/rad etish endpointlari"
+            "description": "Admin tomonidan e'lonlarni ko'rish, tahrirlash (pending), tasdiqlash/rad etish"
         },
         {
             "name": "Admin Categories",

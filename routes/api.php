@@ -53,6 +53,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
         Route::prefix('admin')->middleware('admin')->group(function () {
             Route::get('ads', [AdminCheckController::class, 'index']);
             Route::get('ads/{id}', [AdminCheckController::class, 'show']);
+            // PATCH: qisman yangilash — application/json yoki multipart/form-data (media).
+            Route::patch('ads/{id}/edit', [AdminCheckController::class, 'update']);
             Route::patch('ads/{id}/approve', [AdminCheckController::class, 'approve']);
             Route::patch('ads/{id}/reject', [AdminCheckController::class, 'reject']);
             Route::apiResource('categories', CategoryController::class);
