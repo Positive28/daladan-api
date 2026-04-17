@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Admin\AdminCheckController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\SubCategoryController;
@@ -40,6 +41,9 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
             Route::put('/', [UserController::class, 'updateProfile']);
             Route::post('/avatar', [UserController::class, 'updateAvatar']);
             Route::put('/password', [UserController::class, 'updatePassword']);
+            Route::get('/favorites', [FavoriteController::class, 'index']);
+            Route::post('/favorites/{ad}', [FavoriteController::class, 'store']);
+            Route::delete('/favorites/{ad}', [FavoriteController::class, 'destroy']);
 
             Route::post('ads/{ad}', [AdsController::class, 'update']); // form-data + fayl uchun
             Route::get('ads/{ad}/stats', [AdsController::class, 'viewStats']);

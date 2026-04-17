@@ -1831,6 +1831,104 @@
                 ]
             }
         },
+        "/profile/favorites": {
+            "get": {
+                "tags": [
+                    "Profile Favorites"
+                ],
+                "summary": "Sevimli e'lonlar ro'yxati",
+                "operationId": "7e708347a2384efb6e5f671e1603b97a",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sevimli e'lonlar"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/profile/favorites/{ad}": {
+            "post": {
+                "tags": [
+                    "Profile Favorites"
+                ],
+                "summary": "E'lonni sevimlilarga qo'shish",
+                "operationId": "dedba79c79bebc389449ebc52d6f98d7",
+                "parameters": [
+                    {
+                        "name": "ad",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Qo'shildi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Faol bo'lmagan e'lon"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Profile Favorites"
+                ],
+                "summary": "E'lonni sevimlilardan olib tashlash",
+                "operationId": "d59cd88228d1632c01d79a9b4c3bd2af",
+                "parameters": [
+                    {
+                        "name": "ad",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Olib tashlandi"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/public/ads": {
             "get": {
                 "tags": [
@@ -3422,6 +3520,10 @@
         {
             "name": "Auth",
             "description": "Auth"
+        },
+        {
+            "name": "Profile Favorites",
+            "description": "Profile Favorites"
         }
     ]
 }
