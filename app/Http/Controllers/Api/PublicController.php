@@ -23,7 +23,7 @@ class PublicController extends Controller
         ]);
 
         $query = Ad::query()
-            ->where('status', 'active')
+            ->where('status', Ad::STATUS_ACTIVE)
             ->with(['category', 'subcategory', 'seller.region', 'seller.city']);
 
         if (!empty($validated['category_id'] ?? null)) {
@@ -47,7 +47,7 @@ class PublicController extends Controller
     {
         $ad = Ad::with(['category:id,name', 'subcategory:id,name', 'seller.region', 'seller.city'])
             ->where('id', $id)
-            ->where('status', 'active')
+            ->where('status', Ad::STATUS_ACTIVE)
             ->first();
 
         if (!$ad) {

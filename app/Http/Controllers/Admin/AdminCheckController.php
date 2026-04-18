@@ -75,6 +75,8 @@ class AdminCheckController extends Controller
             'reject_reason' => null,
         ]);
 
+        $ad->refresh();
+
         return response()->successJson([
             'message' => 'E\'lon tasdiqlandi.',
             'status' => $ad->status,

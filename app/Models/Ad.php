@@ -126,6 +126,24 @@ class Ad extends Model implements HasMedia
     {
         $t = now()->format('Y-m-d H:i:s');
 
+        // PostgreSQL: boolean ustun bilan `= 1` solishtirish xato beradi (boolean = integer).
+        // MySQL/SQLite: tinyint/0-1 uchun `= 1` ishlatiladi.
+        $driver = $query->getConnection()->getDriverName();
+        if ($driver === 'pgsql') {
+            return $query->orderByRaw(
+                'CASE
+                    WHEN is_boosted IS TRUE
+                        AND (boost_starts_at IS NULL OR boost_starts_at <= ?)
+                        AND boost_expires_at > ? THEN 0
+                    WHEN is_top_sale IS TRUE
+                        AND (boost_starts_at IS NULL OR boost_starts_at <= ?)
+                        AND boost_expires_at > ? THEN 1
+                    ELSE 2
+                END',
+                [$t, $t, $t, $t]
+            );
+        }
+
         return $query->orderByRaw(
             'CASE
                 WHEN is_boosted = 1
