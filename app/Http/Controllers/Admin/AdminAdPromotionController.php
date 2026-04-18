@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use OpenApi\Annotations as OA;
 
 /**
- * Promo buyurtmani tasdiqlash (Click/Payme dan keyin). ads bilan sinxron AdPromotionService orqali.
+ * Admin: promo buyurtmalari ro'yxati + tasdiq (Click/Payme dan keyin). ads bilan sinxron AdPromotionService orqali.
  */
 class AdminAdPromotionController extends Controller
 {
@@ -18,6 +18,44 @@ class AdminAdPromotionController extends Controller
         private readonly AdPromotionService $promotionService
     ) {
         $this->middleware(['auth:api', 'admin']);
+    }
+
+    /**
+     * Admin panel: pullik promo buyurtmalari (odatda kutilayotganlar).
+     *
+     * @queryParam status pending|paid|active|expired|cancelled|all (default: pending)
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $perPage = min(max((int) $request->input('per_page', 15), 1), 50);
+
+        $allowed = [
+            AdPromotion::STATUS_PENDING,
+            AdPromotion::STATUS_PAID,
+            AdPromotion::STATUS_ACTIVE,
+            AdPromotion::STATUS_EXPIRED,
+            AdPromotion::STATUS_CANCELLED,
+        ];
+
+        $status = (string) $request->query('status', AdPromotion::STATUS_PENDING);
+
+        $query = AdPromotion::query()
+            ->with([
+                'ad:id,title,status,seller_id',
+                'promotionPlan:id,name,slug,type,price,currency,duration_days',
+                'user:id,phone,fname,lname',
+            ])
+            ->orderByDesc('created_at');
+
+        if ($status === 'all') {
+            // filter yo'q
+        } elseif (in_array($status, $allowed, true)) {
+            $query->where('status', $status);
+        } else {
+            $query->where('status', AdPromotion::STATUS_PENDING);
+        }
+
+        return response()->successJson($query->paginate($perPage));
     }
 
     /**
@@ -48,10 +86,36 @@ class AdminAdPromotionController extends Controller
     // =========================================================================
 
     /**
+     * index() — GET /admin/ad-promotions
+     * @OA\Get(
+     *     path="/admin/ad-promotions",
+     *     tags={"Admin Promotions"},
+     *     summary="Promo buyurtmalari (admin panel ro'yxati)",
+     *     description="Default: faqat pending. status=all yoki boshqa holat — filter.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", example=15)),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         required=false,
+     *         description="pending (default) | paid | active | expired | cancelled | all",
+     *         @OA\Schema(type="string", example="pending")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Paginatsiyali buyurtmalar",
+     *         @OA\JsonContent(ref="#/components/schemas/AdminAdPromotionListSuccessResponse")
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+    private function _swaggerIndex(): void {}
+
+    /**
      * confirm() — PATCH /admin/ad-promotions/{promotion}/confirm
      * @OA\Patch(
      *     path="/admin/ad-promotions/{promotion}/confirm",
-     *     tags={"Admin Ads Moderation"},
+     *     tags={"Admin Promotions"},
      *     summary="Pending promo buyurtmasini tasdiqlash (active + ads sinxron)",
      *     description="Click/Payme dan keyin ixtiyoriy payment_transaction_id. Faqat pending holat.",
      *     security={{"bearerAuth":{}}},
@@ -117,6 +181,24 @@ class AdminAdPromotionController extends Controller
      *     @OA\Property(property="success", type="boolean", example=true),
      *     @OA\Property(property="message", type="string", example="ok"),
      *     @OA\Property(property="data", ref="#/components/schemas/AdminAdPromotionDetail")
+     * )
+     * @OA\Schema(
+     *     schema="AdminAdPromotionListSuccessResponse",
+     *     type="object",
+     *     @OA\Property(property="success", type="boolean", example=true),
+     *     @OA\Property(property="message", type="string", example="ok"),
+     *     @OA\Property(
+     *         property="data",
+     *         type="object",
+     *         @OA\Property(property="current_page", type="integer", example=1),
+     *         @OA\Property(property="per_page", type="integer", example=15),
+     *         @OA\Property(property="total", type="integer", example=3),
+     *         @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/AdminAdPromotionDetail"))
+     *     )
+     * )
+     * @OA\Tag(
+     *     name="Admin Promotions",
+     *     description="Pullik top/boost buyurtmalari: ro'yxat va tasdiq"
      * )
      */
     private function _swaggerSchemas(): void {}

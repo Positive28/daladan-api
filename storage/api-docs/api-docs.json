@@ -20,10 +20,61 @@
         }
     ],
     "paths": {
+        "/admin/ad-promotions": {
+            "get": {
+                "tags": [
+                    "Admin Promotions"
+                ],
+                "summary": "Promo buyurtmalari (admin panel ro'yxati)",
+                "description": "Default: faqat pending. status=all yoki boshqa holat — filter.",
+                "operationId": "fc192c4e01fca385706c2b15fa955ad2",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "pending (default) | paid | active | expired | cancelled | all",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "pending"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginatsiyali buyurtmalar",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminAdPromotionListSuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/admin/ad-promotions/{promotion}/confirm": {
             "patch": {
                 "tags": [
-                    "Admin Ads Moderation"
+                    "Admin Promotions"
                 ],
                 "summary": "Pending promo buyurtmasini tasdiqlash (active + ads sinxron)",
                 "description": "Click/Payme dan keyin ixtiyoriy payment_transaction_id. Faqat pending holat.",
@@ -2665,6 +2716,42 @@
                 },
                 "type": "object"
             },
+            "AdminAdPromotionListSuccessResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "properties": {
+                            "current_page": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "per_page": {
+                                "type": "integer",
+                                "example": 15
+                            },
+                            "total": {
+                                "type": "integer",
+                                "example": 3
+                            },
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/AdminAdPromotionDetail"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
             "AdminCategory": {
                 "required": [
                     "id",
@@ -3822,6 +3909,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Admin Promotions",
+            "description": "Pullik top/boost buyurtmalari: ro'yxat va tasdiq"
+        },
         {
             "name": "Admin Categories",
             "description": "Admin panel uchun category CRUD endpointlari"

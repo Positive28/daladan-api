@@ -63,7 +63,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
             Route::patch('ads/{id}/edit', [AdminCheckController::class, 'update']);
             Route::patch('ads/{id}/approve', [AdminCheckController::class, 'approve']);
             Route::patch('ads/{id}/reject', [AdminCheckController::class, 'reject']);
-            // To'lov tekshirilgach: pending → active + ads sinxron.
+            // Promo buyurtmalar: admin panel ro'yxati + tasdiq.
+            Route::get('ad-promotions', [AdminAdPromotionController::class, 'index']);
             Route::patch('ad-promotions/{promotion}/confirm', [AdminAdPromotionController::class, 'confirm']);
             Route::apiResource('categories', CategoryController::class);
             Route::apiResource('subcategories', SubCategoryController::class);
