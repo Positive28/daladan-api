@@ -17,7 +17,7 @@ class FavoriteController extends Controller
         $favorites = $request->user()
             ->favorites()
             ->where('ads.status', Ad::STATUS_ACTIVE)
-            ->with(['category:id,name', 'subcategory:id,name', 'seller.region', 'seller.city'])
+            ->with(['category:id,name', 'subcategory:id,name', 'seller'])
             ->orderByPivot('created_at', 'desc')
             ->paginate($perPage);
 

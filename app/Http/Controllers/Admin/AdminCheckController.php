@@ -44,7 +44,7 @@ class AdminCheckController extends Controller
     public function show(string $id): JsonResponse
     {
         $ad = Ad::query()
-            ->with(['seller:id,fname,lname,phone,region_id,city_id', 'category:id,name', 'subcategory:id,name'])
+            ->with(['seller:id,fname,lname,phone', 'category:id,name', 'subcategory:id,name'])
             ->find($id);
 
         if (!$ad) {
@@ -170,7 +170,7 @@ class AdminCheckController extends Controller
             }
         }
 
-        $record->refresh()->load(['category:id,name', 'subcategory:id,name', 'seller.region', 'seller.city']);
+        $record->refresh()->load(['category:id,name', 'subcategory:id,name', 'seller']);
 
         return response()->successJson($record);
     }

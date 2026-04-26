@@ -22,7 +22,6 @@ class UserController extends Controller
         $perPage = min(max((int) $request->input('per_page', 15), 1), 50);
 
         $users = User::query()
-            ->with(['region:id,name_uz', 'city:id,name_uz'])
             ->withCount('ads')
             ->orderByDesc('id')
             ->paginate($perPage);
@@ -33,8 +32,6 @@ class UserController extends Controller
     public function show(string $id): JsonResponse
     {
         $user = User::with([
-                'region:id,name_uz',
-                'city:id,name_uz',
                 'ads' => fn ($q) => $q->with(['category:id,name', 'subcategory:id,name'])
                                       ->orderByDesc('created_at'),
             ])
@@ -56,10 +53,6 @@ class UserController extends Controller
             'phone'       => 'required|string|max:20|unique:users,phone',
             'email'       => 'nullable|email|max:150|unique:users,email',
             'password'    => 'required|string|min:6',
-            'telegram'    => 'nullable|string|max:100',
-            'telegram_id' => 'nullable|integer|unique:users,telegram_id',
-            'region_id'   => 'nullable|integer|exists:regions,id',
-            'city_id'     => 'nullable|integer|exists:cities,id',
             'role'        => ['nullable', Rule::in([User::ROLE_USER, User::ROLE_ADMIN])],
         ]);
 
@@ -67,7 +60,6 @@ class UserController extends Controller
         $data['role'] ??= User::ROLE_USER;
 
         $user = User::create($data);
-        $user->load(['region:id,name_uz', 'city:id,name_uz']);
 
         return response()->successJson($user, 201);
     }
@@ -86,10 +78,6 @@ class UserController extends Controller
             'phone'       => ['sometimes', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
             'email'       => ['sometimes', 'nullable', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user->id)],
             'password'    => 'sometimes|string|min:6',
-            'telegram'    => 'sometimes|nullable|string|max:100',
-            'telegram_id' => ['sometimes', 'nullable', 'integer', Rule::unique('users', 'telegram_id')->ignore($user->id)],
-            'region_id'   => 'sometimes|nullable|integer|exists:regions,id',
-            'city_id'     => 'sometimes|nullable|integer|exists:cities,id',
             'role'        => ['sometimes', Rule::in([User::ROLE_USER, User::ROLE_ADMIN])],
         ]);
 
@@ -98,7 +86,6 @@ class UserController extends Controller
         }
 
         $user->update($data);
-        $user->load(['region:id,name_uz', 'city:id,name_uz']);
 
         return response()->successJson($user);
     }
@@ -186,10 +173,6 @@ class UserController extends Controller
      *             @OA\Property(property="phone",       type="string",  example="+998901234567"),
      *             @OA\Property(property="email",       type="string",  example="ali@example.com"),
      *             @OA\Property(property="password",    type="string",  example="secret123"),
-     *             @OA\Property(property="telegram",    type="string",  example="ali_uz"),
-     *             @OA\Property(property="telegram_id", type="integer", example=123456789),
-     *             @OA\Property(property="region_id",   type="integer", example=1),
-     *             @OA\Property(property="city_id",     type="integer", example=5),
      *             @OA\Property(property="role",        type="string",  enum={"user","admin"}, example="user")
      *         )
      *     ),
@@ -227,10 +210,6 @@ class UserController extends Controller
      *             @OA\Property(property="phone",       type="string",  example="+998901234567"),
      *             @OA\Property(property="email",       type="string",  example="ali@example.com"),
      *             @OA\Property(property="password",    type="string",  example="newpassword"),
-     *             @OA\Property(property="telegram",    type="string",  example="ali_uz"),
-     *             @OA\Property(property="telegram_id", type="integer", example=123456789),
-     *             @OA\Property(property="region_id",   type="integer", example=1),
-     *             @OA\Property(property="city_id",     type="integer", example=5),
      *             @OA\Property(property="role",        type="string",  enum={"user","admin"}, example="user")
      *         )
      *     ),
@@ -294,9 +273,7 @@ class UserController extends Controller
      *     @OA\Property(property="fname", type="string", nullable=true),
      *     @OA\Property(property="lname", type="string", nullable=true),
      *     @OA\Property(property="phone", type="string", example="+998901234567"),
-     *     @OA\Property(property="role", type="string", example="user"),
-     *     @OA\Property(property="region_id", type="integer", nullable=true),
-     *     @OA\Property(property="city_id", type="integer", nullable=true)
+     *     @OA\Property(property="role", type="string", example="user")
      * )
      * @OA\Schema(
      *     schema="AdminUserListResponse",

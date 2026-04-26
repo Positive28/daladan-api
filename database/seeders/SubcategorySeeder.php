@@ -36,7 +36,7 @@ class SubcategorySeeder extends Seeder
                 ['name' => 'Arpa',         'slug' => 'barley'],
                 ['name' => 'Guruch',       'slug' => 'rice'],
                 ['name' => "Makkajo'xori", 'slug' => 'corn'],
-                ['name' => 'Soya',         'slug' => 'soybean'],
+                ['name' => "Tariq",        'slug' => 'millet'],
             ],
             'animal' => [
                 ['name' => "Qo'ylar",  'slug' => 'sheep'],
@@ -54,25 +54,16 @@ class SubcategorySeeder extends Seeder
                 ['name' => 'Bedana',     'slug' => 'quail'],
             ],
             'forage' => [
-                ['name' => 'Omuxta yem', 'slug' => 'compound_feed'],
                 ['name' => 'Somon',      'slug' => 'straw'],
                 ['name' => 'Beda',       'slug' => 'alfalfa'],
                 ['name' => 'Kepak',      'slug' => 'bran'],
                 ['name' => 'Silos',      'slug' => 'silage'],
+                ['name' => 'SHirot',     'slug' => 'meal'],
+                ['name' => 'Kunjara',    'slug' => 'oilseed_meal'],
             ],
-            'fertilizer' => [
-                ['name' => "Mineral o'g'itlar", 'slug' => 'mineral_fertilizer'],
-                ['name' => "Organik o'g'itlar", 'slug' => 'organic_fertilizer'],
-                ['name' => 'Herbitsid',         'slug' => 'herbicide'],
-                ['name' => 'Insektitsid',       'slug' => 'insecticide'],
-                ['name' => 'Fungitsid',         'slug' => 'fungicide'],
-            ],
-            'agricultural-equipment' => [
-                ['name' => 'Traktor',                   'slug' => 'tractor'],
-                ['name' => 'Kultivator',                'slug' => 'cultivator'],
-                ['name' => "Sug'orish uskunalari",      'slug' => 'irrigation_equipment'],
-                ['name' => 'Ekin sepish (seyalkalar)',  'slug' => 'seeder'],
-                ['name' => "O'rim-yig'im uskunalari",   'slug' => 'harvesting_equipment'],
+            'agricultural_equipment' => [
+                ['name' => 'Yerga ishlov beruvchi texnikalar',         'slug' => 'tillage_equipment'],
+                ['name' => 'Hosil teruvchi uskuna',                    'slug' => 'harvesting_equipment'],
             ],
         ];
 

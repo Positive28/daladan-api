@@ -16,7 +16,7 @@ class AdsController extends Controller
     {
         $perPage = min(max((int) $request->input('per_page', 15), 1), 50);
 
-        $seller = $request->user()->load(['region', 'city']);
+        $seller = $request->user();
 
         $ads = $seller
             ->ads()
@@ -34,10 +34,6 @@ class AdsController extends Controller
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
-
-        if (!$user->region_id || !$user->city_id) {
-            return response()->errorJson('E\'lon joylash uchun avval profilingizda viloyat va shaharni belgilang.', 422);
-        }
 
         $validated = $request->validate([
             'category_id'    => 'required|integer|exists:categories,id',
@@ -61,8 +57,6 @@ class AdsController extends Controller
         $ad = Ad::create([
             ...$validated,
             'seller_id' => $user->id,
-            'region_id' => $user->region_id,
-            'city_id'   => $user->city_id,
             'status'    => Ad::STATUS_PENDING,
         ]);
 
@@ -72,7 +66,7 @@ class AdsController extends Controller
             }
         }
 
-        $seller = $user->load(['region', 'city']);
+        $seller = $user;
         $ad->load(['category:id,name', 'subcategory:id,name']);
         $ad->setRelation('seller', $seller);
 
@@ -81,7 +75,7 @@ class AdsController extends Controller
 
     public function show(Request $request, string $ad): JsonResponse
     {
-        $seller = $request->user()->load(['region', 'city']);
+        $seller = $request->user();
 
         $model = Ad::with(['category:id,name', 'subcategory:id,name'])
             ->where('id', $ad)
@@ -153,7 +147,7 @@ class AdsController extends Controller
             }
         }
 
-        $seller = $request->user()->load(['region', 'city']);
+        $seller = $request->user();
         $record->refresh()->load(['category:id,name', 'subcategory:id,name']);
         $record->setRelation('seller', $seller);
 

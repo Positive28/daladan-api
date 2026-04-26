@@ -24,7 +24,7 @@ class PublicController extends Controller
 
         $query = Ad::query()
             ->where('status', Ad::STATUS_ACTIVE)
-            ->with(['category', 'subcategory', 'seller.region', 'seller.city']);
+            ->with(['category', 'subcategory', 'seller']);
 
         if (!empty($validated['category_id'] ?? null)) {
             $query->where('category_id', $validated['category_id']);
@@ -45,7 +45,7 @@ class PublicController extends Controller
 
     public function ad(Request $request, string $id): JsonResponse
     {
-        $ad = Ad::with(['category:id,name', 'subcategory:id,name', 'seller.region', 'seller.city'])
+        $ad = Ad::with(['category:id,name', 'subcategory:id,name', 'seller'])
             ->where('id', $id)
             ->where('status', Ad::STATUS_ACTIVE)
             ->first();

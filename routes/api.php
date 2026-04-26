@@ -4,7 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AdPromotionController;
 use App\Http\Controllers\Api\AdsController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\EmailAuthController;
+use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\PublicController;
+use App\Http\Controllers\Api\PhoneAuthController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\FavoriteController;
@@ -19,9 +22,22 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
     // Tekshirish: GET /api/v1 — serverda API ishlayotganini tekshirish
     Route::get('/', fn () => response()->json(['api' => 'v1', 'status' => 'ok', 'message' => 'API ishlayapti']));
 
-    Route::post('/register', [AuthController::class, 'register'])->name('register');
-    Route::post('/login', [AuthController::class, 'login'])->name('login');
-    Route::post('/refresh', [AuthController::class, 'refresh']);
+    Route::post('/login',    [AuthController::class, 'login'])->name('login');
+    Route::post('/refresh',  [AuthController::class, 'refresh']);
+
+    Route::prefix('auth')->group(function () {
+        Route::post('/phone/start',       [PhoneAuthController::class, 'start'])->middleware('throttle:otp-start');
+        Route::post('/phone/verify',      [PhoneAuthController::class, 'verify'])->middleware('throttle:otp-verify');
+        Route::post('/register/complete', [PhoneAuthController::class, 'complete']);
+
+        Route::post('/email/register',          [EmailAuthController::class, 'register']);
+        Route::post('/email/resend',            [EmailAuthController::class, 'resend']);
+        Route::get('/email/verify/{id}/{hash}', [EmailAuthController::class, 'verify'])
+            ->middleware('signed')->name('verification.verify');
+
+        Route::get('/google/redirect', [GoogleAuthController::class, 'redirect']);
+        Route::get('/google/callback', [GoogleAuthController::class, 'callback']);
+    });
 
     // Viloyat va tumanlar ro'yxati (public, registratsiya formasi uchun)
     Route::prefix('resources')->controller(ResourceController::class)->group(function () {
@@ -72,6 +88,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
         });
 
         Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/get-me', [AuthController::class, 'me']);
     });
 
 });

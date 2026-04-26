@@ -14,7 +14,6 @@ class UserController extends Controller
     public function profile(): JsonResponse
     {
         $user = auth('api')->user();
-        $user->load(['region', 'city']);
         $user->load([
             'ads' => fn ($q) => $q
                 ->with(['category:id,name', 'subcategory:id,name'])
@@ -33,13 +32,9 @@ class UserController extends Controller
             'fname'     => 'sometimes|string|max:255',
             'lname'     => 'sometimes|string|max:255',
             'email'     => 'sometimes|email|unique:users,email,' . $user->id,
-            'telegram'  => 'sometimes|nullable|string|max:80',
-            'region_id' => 'sometimes|nullable|integer|exists:regions,id',
-            'city_id'   => 'sometimes|nullable|integer|exists:cities,id',
         ]);
 
         $user->update($validated);
-        $user->load(['region', 'city']);
 
         return response()->json(['message' => 'Profil yangilandi', 'user' => $user]);
     }
@@ -115,10 +110,7 @@ class UserController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="fname",     type="string",  nullable=true),
      *             @OA\Property(property="lname",     type="string",  nullable=true),
-     *             @OA\Property(property="email",     type="string",  nullable=true),
-     *             @OA\Property(property="telegram",  type="string",  nullable=true),
-     *             @OA\Property(property="region_id", type="integer", nullable=true),
-     *             @OA\Property(property="city_id",   type="integer", nullable=true)
+     *             @OA\Property(property="email",     type="string",  nullable=true)
      *         )
      *     ),
      *     @OA\Response(
@@ -214,11 +206,8 @@ class UserController extends Controller
      *     @OA\Property(property="fname", type="string", nullable=true, example="Ali"),
      *     @OA\Property(property="lname", type="string", nullable=true, example="Valiyev"),
      *     @OA\Property(property="phone", type="string", example="+998901234567"),
-     *     @OA\Property(property="telegram", type="string", nullable=true, example="@ali"),
      *     @OA\Property(property="email", type="string", nullable=true, example="ali@mail.com"),
      *     @OA\Property(property="role", type="string", example="user"),
-     *     @OA\Property(property="region_id", type="integer", nullable=true, example=1),
-     *     @OA\Property(property="city_id", type="integer", nullable=true, example=10),
      *     @OA\Property(property="avatar_url", type="string", nullable=true, example="http://daladan-api.loc/storage/avatars/abc.jpg"),
      *     @OA\Property(property="ads", type="array", @OA\Items(ref="#/components/schemas/ProfileAdShort"))
      * )

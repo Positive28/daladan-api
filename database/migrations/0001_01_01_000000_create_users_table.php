@@ -13,17 +13,17 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('fname');
-            $table->string('lname');
-            $table->string('phone')->unique();
-            $table->string('telegram', 80)->nullable();
-            $table->bigInteger('telegram_id')->nullable()->unique();
-            $table->string('role');
-            $table->string('email')->nullable();
+            $table->string('fname')->nullable();
+            $table->string('lname')->nullable();
+            $table->string('phone', 20)->nullable()->unique();
+            $table->string('email')->nullable()->unique();
+            $table->string('google_id')->nullable()->unique();
+            $table->enum('status', ['pending', 'active', 'blocked'])->default('pending');
+            $table->enum('registration_type', ['phone', 'email'])->nullable();
+            $table->enum('role', ['user', 'admin'])->default('user');
+            $table->timestamp('phone_verified_at')->nullable();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->unsignedBigInteger('region_id')->nullable();
-            $table->unsignedBigInteger('city_id')->nullable();
+            $table->string('password')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
@@ -34,14 +34,6 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable();
         });
 
-        Schema::create('sessions', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->longText('payload');
-            $table->integer('last_activity')->index();
-        });
     }
 
     /**
@@ -51,6 +43,5 @@ return new class extends Migration
     {
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('sessions');
     }
 };

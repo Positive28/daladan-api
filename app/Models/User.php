@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,13 +11,18 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject, HasMedia
+class User extends Authenticatable implements JWTSubject, HasMedia, MustVerifyEmail
 {
     public const ROLE_USER = 'user';
     public const ROLE_ADMIN = 'admin';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_BLOCKED = 'blocked';
+    public const TYPE_PHONE = 'phone';
+    public const TYPE_EMAIL = 'email';
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, InteractsWithMedia;
+    use HasFactory, Notifiable, InteractsWithMedia, MustVerifyEmailTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -27,13 +33,14 @@ class User extends Authenticatable implements JWTSubject, HasMedia
         'fname',
         'lname',
         'phone',
-        'telegram',
-        'telegram_id',
-        'region_id',
-        'city_id',
         'role',
         'email',
+        'google_id',
         'password',
+        'status',
+        'registration_type',
+        'phone_verified_at',
+        'email_verified_at',
     ];
 
     /**
@@ -54,6 +61,7 @@ class User extends Authenticatable implements JWTSubject, HasMedia
     protected function casts(): array
     {
         return [
+            'phone_verified_at' => 'datetime',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
@@ -69,6 +77,16 @@ class User extends Authenticatable implements JWTSubject, HasMedia
         return [];
     }
 
+    public function isActive(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE;
+    }
+
+    public function isPhoneVerified(): bool
+    {
+        return $this->phone_verified_at !== null;
+    }
+
     public function ads()
     {
         return $this->hasMany(Ad::class, 'seller_id');
@@ -77,16 +95,6 @@ class User extends Authenticatable implements JWTSubject, HasMedia
     public function favorites()
     {
         return $this->belongsToMany(Ad::class, 'favorites')->withTimestamps();
-    }
-
-    public function region()
-    {
-        return $this->belongsTo(Region::class);
-    }
-
-    public function city()
-    {
-        return $this->belongsTo(City::class);
     }
 
     public function registerMediaCollections(): void

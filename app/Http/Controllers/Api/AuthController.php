@@ -21,26 +21,23 @@ class AuthController extends Controller
         $validated = $request->validate([
             'phone'     => 'required|string|max:20|unique:users,phone',
             'password'  => 'required|string|min:6',
-            'fname'     => 'required|string|max:255',
-            'lname'     => 'required|string|max:255',
+            'fname'     => 'nullable|string|max:255',
+            'lname'     => 'nullable|string|max:255',
             'email'       => 'nullable|email|unique:users,email',
-            'telegram'    => 'nullable|string|max:80',
-            'telegram_id' => 'nullable|integer|unique:users,telegram_id',
-            'region_id'   => 'nullable|integer|exists:regions,id',
-            'city_id'     => 'nullable|integer|exists:cities,id',
         ], [
             'phone.unique' => 'Bunday nomer mavjud.',
         ]);
 
         $validated['role'] = User::ROLE_USER;
+        $validated['status'] = User::STATUS_ACTIVE;
+        $validated['registration_type'] = User::TYPE_PHONE;
+        $validated['phone_verified_at'] = now();
         $user = User::create($validated);
 
         $token = auth('api')->login($user);
         if (!$token) {
             return response()->json(['message' => 'Registration succeeded, but token creation failed.'], 500);
         }
-
-        $user->load(['region', 'city']);
 
         return response()->json([
             'access_token' => $token,
@@ -52,13 +49,19 @@ class AuthController extends Controller
 
     public function login(Request $request): JsonResponse
     {
-        $credentials = $request->validate([
-            'phone'    => ['required', 'string'],
-            'password' => ['required'],
+        $validated = $request->validate([
+            'identifier' => ['required', 'string'],
+            'password' => ['required', 'string'],
         ]);
 
+        $field = filter_var($validated['identifier'], FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+        $credentials = [
+            $field => $validated['identifier'],
+            'password' => $validated['password'],
+        ];
+
         if (!$token = auth('api')->attempt($credentials)) {
-            return response()->errorJson('Telefon raqam yoki parol noto\'g\'ri.', 401);
+            return response()->errorJson('Email/telefon yoki parol noto\'g\'ri.', 401);
         }
 
         return $this->respondWithToken($token);
@@ -77,8 +80,6 @@ class AuthController extends Controller
         if (!$user) {
             return response()->errorJson('Unauthorized', 401);
         }
-        $user->load(['region', 'city']);
-
         return response()->json($user);
     }
 
@@ -108,8 +109,6 @@ class AuthController extends Controller
             return response()->errorJson('Unauthorized', 401);
         }
 
-        $user->load(['region', 'city']);
-
         return response()->json([
             'access_token' => $token,
             'token_type'   => 'bearer',
@@ -129,21 +128,17 @@ class AuthController extends Controller
      *     tags={"Auth"},
      *     summary="Yangi foydalanuvchini ro'yxatdan o'tkazish",
      *     @OA\Parameter(name="auth_type", in="query", required=true,
-     *         description="Registratsiya turi: password yoki telegram",
-     *         @OA\Schema(type="string", enum={"password","telegram"}, default="password")
+     *         description="Registratsiya turi",
+     *         @OA\Schema(type="string", enum={"password"}, default="password")
      *     ),
      *     @OA\RequestBody(required=true,
      *         @OA\JsonContent(
-     *             required={"phone","password","fname","lname"},
+     *             required={"phone","password"},
      *             @OA\Property(property="phone",     type="string",  example="+998901234567"),
      *             @OA\Property(property="password",  type="string",  example="parol123"),
-     *             @OA\Property(property="fname",     type="string",  example="Ism"),
-     *             @OA\Property(property="lname",     type="string",  example="Familiya"),
-     *             @OA\Property(property="region_id", type="integer", example=1),
-     *             @OA\Property(property="city_id",   type="integer", example=10),
-     *             @OA\Property(property="email",       type="string",  nullable=true),
-     *             @OA\Property(property="telegram",    type="string",  nullable=true),
-     *             @OA\Property(property="telegram_id", type="integer", nullable=true)
+     *             @OA\Property(property="fname",     type="string",  nullable=true, example="Ism"),
+     *             @OA\Property(property="lname",     type="string",  nullable=true, example="Familiya"),
+     *             @OA\Property(property="email",       type="string",  nullable=true)
      *         )
      *     ),
      *     @OA\Response(
@@ -161,11 +156,11 @@ class AuthController extends Controller
      * @OA\Post(
      *     path="/login",
      *     tags={"Auth"},
-     *     summary="Telefon raqam va parol bilan login",
+     *     summary="Email yoki telefon va parol bilan login",
      *     @OA\RequestBody(required=true,
      *         @OA\JsonContent(
-     *             required={"phone","password"},
-     *             @OA\Property(property="phone",    type="string", example="+998901234567"),
+     *             required={"identifier","password"},
+     *             @OA\Property(property="identifier",    type="string", example="+998901234567"),
      *             @OA\Property(property="password", type="string", example="parol123")
      *         )
      *     ),
@@ -174,7 +169,7 @@ class AuthController extends Controller
      *         description="Muvaffaqiyatli login, JWT token qaytadi",
      *         @OA\JsonContent(ref="#/components/schemas/AuthTokenResponse")
      *     ),
-     *     @OA\Response(response=401, description="Telefon raqam yoki parol noto'g'ri"),
+     *     @OA\Response(response=401, description="Email/telefon yoki parol noto'g'ri"),
      *     @OA\Response(response=422, description="Validatsiya xatosi")
      * )
      */
@@ -251,8 +246,6 @@ class AuthController extends Controller
      *     @OA\Property(property="phone", type="string", example="+998901234567"),
      *     @OA\Property(property="email", type="string", nullable=true, example="ali@mail.com"),
      *     @OA\Property(property="role", type="string", example="user"),
-     *     @OA\Property(property="region_id", type="integer", nullable=true, example=1),
-     *     @OA\Property(property="city_id", type="integer", nullable=true, example=10)
      * )
      * @OA\Schema(
      *     schema="AuthTokenResponse",

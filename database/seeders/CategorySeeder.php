@@ -16,7 +16,6 @@ class CategorySeeder extends Seeder
             ['name' => 'Chorva',                     'slug' => 'animal',               'sort_order' => 4, 'is_active' => true],
             ['name' => 'Parranda',                   'slug' => 'poultry',              'sort_order' => 5, 'is_active' => true],
             ['name' => 'Yem va ozuqa',               'slug' => 'forage',               'sort_order' => 6, 'is_active' => true],
-            ['name' => "O'g'it va kimyoviylar",      'slug' => 'fertilizer',           'sort_order' => 7, 'is_active' => true],
             ['name' => "Qishloq xo'jaligi jihozlari", 'slug' => 'agricultural_equipment', 'sort_order' => 8, 'is_active' => true],
         ];
 

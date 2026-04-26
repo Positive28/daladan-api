@@ -160,18 +160,6 @@ class Ad extends Model implements HasMedia
 
     // -------------------------------------------------------------------------
 
-    public function getRegionAttribute(): ?Region
-    {
-        return $this->seller?->region;
-    }
-
-    public function getCityAttribute(): ?City
-    {
-        return $this->seller?->city;
-    }
-
-    // -------------------------------------------------------------------------
-
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('gallery');
