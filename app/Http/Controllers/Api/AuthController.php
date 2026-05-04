@@ -14,39 +14,6 @@ use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request): JsonResponse
-    {
-        $request->merge(['auth_type' => $request->query('auth_type', 'password')]);
-
-        $validated = $request->validate([
-            'phone'     => 'required|string|max:20|unique:users,phone',
-            'password'  => 'required|string|min:6',
-            'fname'     => 'nullable|string|max:255',
-            'lname'     => 'nullable|string|max:255',
-            'email'       => 'nullable|email|unique:users,email',
-        ], [
-            'phone.unique' => 'Bunday nomer mavjud.',
-        ]);
-
-        $validated['role'] = User::ROLE_USER;
-        $validated['status'] = User::STATUS_ACTIVE;
-        $validated['registration_type'] = User::TYPE_PHONE;
-        $validated['phone_verified_at'] = now();
-        $user = User::create($validated);
-
-        $token = auth('api')->login($user);
-        if (!$token) {
-            return response()->json(['message' => 'Registration succeeded, but token creation failed.'], 500);
-        }
-
-        return response()->json([
-            'access_token' => $token,
-            'token_type'   => 'bearer',
-            'expires_in'   => auth('api')->factory()->getTTL() * 60,
-            'user'         => $user,
-        ], 201);
-    }
-
     public function login(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -62,6 +29,16 @@ class AuthController extends Controller
 
         if (!$token = auth('api')->attempt($credentials)) {
             return response()->errorJson('Email/telefon yoki parol noto\'g\'ri.', 401);
+        }
+
+        $user = auth('api')->setToken($token)->user();
+        if ($user && $user->status === User::STATUS_BLOCKED) {
+            auth('api')->logout();
+            return response()->errorJson('Sizning akkauntingiz bloklangan.', 403);
+        }
+        if ($user && $user->status === User::STATUS_PENDING) {
+            auth('api')->logout();
+            return response()->errorJson('Akkauntingiz tasdiqlanmagan. Iltimos, emailingizni tasdiqlang.', 403);
         }
 
         return $this->respondWithToken($token);
@@ -120,36 +97,6 @@ class AuthController extends Controller
     // =========================================================================
     // Swagger / OpenAPI annotations
     // =========================================================================
-
-    /**
-     * register() — POST /register
-     * @OA\Post(
-     *     path="/register",
-     *     tags={"Auth"},
-     *     summary="Yangi foydalanuvchini ro'yxatdan o'tkazish",
-     *     @OA\Parameter(name="auth_type", in="query", required=true,
-     *         description="Registratsiya turi",
-     *         @OA\Schema(type="string", enum={"password"}, default="password")
-     *     ),
-     *     @OA\RequestBody(required=true,
-     *         @OA\JsonContent(
-     *             required={"phone","password"},
-     *             @OA\Property(property="phone",     type="string",  example="+998901234567"),
-     *             @OA\Property(property="password",  type="string",  example="parol123"),
-     *             @OA\Property(property="fname",     type="string",  nullable=true, example="Ism"),
-     *             @OA\Property(property="lname",     type="string",  nullable=true, example="Familiya"),
-     *             @OA\Property(property="email",       type="string",  nullable=true)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Muvaffaqiyatli ro'yxatdan o'tdi, token qaytdi",
-     *         @OA\JsonContent(ref="#/components/schemas/AuthTokenResponse")
-     *     ),
-     *     @OA\Response(response=422, description="Validatsiya xatosi")
-     * )
-     */
-    private function _swaggerRegister(): void {}
 
     /**
      * login() — POST /login

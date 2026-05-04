@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\PhoneVerification;
 use App\Models\User;
 use App\Services\Auth\PhoneVerificationService;
 use Illuminate\Http\JsonResponse;
@@ -74,6 +75,10 @@ class PhoneAuthController extends Controller
             'registration_type' => User::TYPE_PHONE,
             'phone_verified_at' => now(),
         ]);
+
+        PhoneVerification::query()
+            ->where('phone', $validated['phone'])
+            ->delete();
 
         $token = auth('api')->login($user);
 

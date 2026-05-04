@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Spatie\Image\Manipulations;
 use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Ad extends Model implements HasMedia
@@ -165,13 +167,72 @@ class Ad extends Model implements HasMedia
         $this->addMediaCollection('gallery');
     }
 
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        if ($media && ! str_starts_with((string) $media->mime_type, 'image/')) {
+            return;
+        }
+
+        $this->addMediaConversion('thumb')
+            ->fit(Manipulations::FIT_MAX, 240, 240)
+            ->format(Manipulations::FORMAT_WEBP)
+            ->quality(75)
+            ->optimize()
+            ->performOnCollections('gallery');
+
+        $this->addMediaConversion('medium')
+            ->fit(Manipulations::FIT_MAX, 640, 640)
+            ->format(Manipulations::FORMAT_WEBP)
+            ->quality(82)
+            ->optimize()
+            ->performOnCollections('gallery');
+
+        $this->addMediaConversion('large')
+            ->fit(Manipulations::FIT_MAX, 1280, 1280)
+            ->format(Manipulations::FORMAT_WEBP)
+            ->quality(86)
+            ->optimize()
+            ->performOnCollections('gallery');
+
+        $this->addMediaConversion('xlarge')
+            ->fit(Manipulations::FIT_MAX, 1920, 1920)
+            ->format(Manipulations::FORMAT_WEBP)
+            ->quality(90)
+            ->optimize()
+            ->performOnCollections('gallery');
+    }
+
     public function getMediaListAttribute(): array
     {
-        return $this->getMedia('gallery')->map(fn ($m) => [
-            'id'   => $m->id,
-            'url'  => url($m->getUrl()),
-            'type' => $m->mime_type,
-        ])->values()->toArray();
+        return $this->getMedia('gallery')->map(function (Media $m) {
+            $isImage = str_starts_with((string) $m->mime_type, 'image/');
+            $originalUrl = url($m->getUrl());
+
+            $thumbUrl = $isImage && $m->hasGeneratedConversion('thumb')
+                ? url($m->getUrl('thumb'))
+                : $originalUrl;
+            $mediumUrl = $isImage && $m->hasGeneratedConversion('medium')
+                ? url($m->getUrl('medium'))
+                : $originalUrl;
+            $largeUrl = $isImage && $m->hasGeneratedConversion('large')
+                ? url($m->getUrl('large'))
+                : $originalUrl;
+            $xlargeUrl = $isImage && $m->hasGeneratedConversion('xlarge')
+                ? url($m->getUrl('xlarge'))
+                : $originalUrl;
+
+            return [
+                'id' => $m->id,
+                // Backward compatibility: old clients used `url` as the main image URL.
+                'url' => $mediumUrl,
+                'type' => $m->mime_type,
+                'original_url' => $originalUrl,
+                'thumb_url' => $thumbUrl,
+                'medium_url' => $mediumUrl,
+                'large_url' => $largeUrl,
+                'xlarge_url' => $xlargeUrl,
+            ];
+        })->values()->toArray();
     }
 
     protected $appends = ['media_list', 'highlight_active'];
