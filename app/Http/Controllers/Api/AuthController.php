@@ -117,6 +117,7 @@ class AuthController extends Controller
      *         @OA\JsonContent(ref="#/components/schemas/AuthTokenResponse")
      *     ),
      *     @OA\Response(response=401, description="Email/telefon yoki parol noto'g'ri"),
+     *     @OA\Response(response=403, description="Bloklangan yoki email tasdiqlanmagan (faqat email ro'yxatdan o'tganlar)"),
      *     @OA\Response(response=422, description="Validatsiya xatosi")
      * )
      */
@@ -193,6 +194,8 @@ class AuthController extends Controller
      *     @OA\Property(property="phone", type="string", example="+998901234567"),
      *     @OA\Property(property="email", type="string", nullable=true, example="ali@mail.com"),
      *     @OA\Property(property="role", type="string", example="user"),
+     *     @OA\Property(property="status", type="string", example="active", description="pending | active | blocked"),
+     *     @OA\Property(property="registration_type", type="string", nullable=true, enum={"phone","email"}, example="phone"),
      * )
      * @OA\Schema(
      *     schema="AuthTokenResponse",
