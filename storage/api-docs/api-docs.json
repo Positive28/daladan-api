@@ -936,22 +936,6 @@
                                         "type": "string",
                                         "example": "secret123"
                                     },
-                                    "telegram": {
-                                        "type": "string",
-                                        "example": "ali_uz"
-                                    },
-                                    "telegram_id": {
-                                        "type": "integer",
-                                        "example": 123456789
-                                    },
-                                    "region_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "city_id": {
-                                        "type": "integer",
-                                        "example": 5
-                                    },
                                     "role": {
                                         "type": "string",
                                         "enum": [
@@ -1085,22 +1069,6 @@
                                     "password": {
                                         "type": "string",
                                         "example": "newpassword"
-                                    },
-                                    "telegram": {
-                                        "type": "string",
-                                        "example": "ali_uz"
-                                    },
-                                    "telegram_id": {
-                                        "type": "integer",
-                                        "example": 123456789
-                                    },
-                                    "region_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "city_id": {
-                                        "type": "integer",
-                                        "example": 5
                                     },
                                     "role": {
                                         "type": "string",
@@ -1767,107 +1735,12 @@
                 ]
             }
         },
-        "/register": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Yangi foydalanuvchini ro'yxatdan o'tkazish",
-                "description": "register() — POST /register",
-                "operationId": "858ecba1c675ee39e49f2b0c265443ff",
-                "parameters": [
-                    {
-                        "name": "auth_type",
-                        "in": "query",
-                        "description": "Registratsiya turi: password yoki telegram",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "default": "password",
-                            "enum": [
-                                "password",
-                                "telegram"
-                            ]
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "phone",
-                                    "password",
-                                    "fname",
-                                    "lname"
-                                ],
-                                "properties": {
-                                    "phone": {
-                                        "type": "string",
-                                        "example": "+998901234567"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "example": "parol123"
-                                    },
-                                    "fname": {
-                                        "type": "string",
-                                        "example": "Ism"
-                                    },
-                                    "lname": {
-                                        "type": "string",
-                                        "example": "Familiya"
-                                    },
-                                    "region_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "city_id": {
-                                        "type": "integer",
-                                        "example": 10
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "telegram": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "telegram_id": {
-                                        "type": "integer",
-                                        "nullable": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Muvaffaqiyatli ro'yxatdan o'tdi, token qaytdi",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AuthTokenResponse"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validatsiya xatosi"
-                    }
-                }
-            }
-        },
         "/login": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Telefon raqam va parol bilan login",
+                "summary": "Email yoki telefon va parol bilan login",
                 "description": "login() — POST /login",
                 "operationId": "a99c7c5fa27adf14888e3da5b618cfe6",
                 "requestBody": {
@@ -1876,11 +1749,11 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "phone",
+                                    "identifier",
                                     "password"
                                 ],
                                 "properties": {
-                                    "phone": {
+                                    "identifier": {
                                         "type": "string",
                                         "example": "+998901234567"
                                     },
@@ -1906,7 +1779,10 @@
                         }
                     },
                     "401": {
-                        "description": "Telefon raqam yoki parol noto'g'ri"
+                        "description": "Email/telefon yoki parol noto'g'ri"
+                    },
+                    "403": {
+                        "description": "Bloklangan yoki email tasdiqlanmagan (faqat email ro'yxatdan o'tganlar)"
                     },
                     "422": {
                         "description": "Validatsiya xatosi"
@@ -1995,6 +1871,143 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/auth/email/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Email orqali ro'yxatdan o'tish",
+                "description": "status=pending; email tasdiqlanguncha POST /login bloklanadi. Keyin GET /auth/email/verify/{id}/{hash} (signed).",
+                "operationId": "fb25a5108b9c2e92ff99ea82e6abf241",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "fname": {
+                                        "type": "string",
+                                        "example": "Ali",
+                                        "nullable": true
+                                    },
+                                    "lname": {
+                                        "type": "string",
+                                        "example": "Valiyev",
+                                        "nullable": true
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "ali@mail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "parol123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "parol123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Tasdiq xati yuborildi"
+                    },
+                    "422": {
+                        "description": "Validatsiya"
+                    }
+                }
+            }
+        },
+        "/auth/email/resend": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Tasdiq xatini qayta yuborish",
+                "description": "resend() — POST /auth/email/resend",
+                "operationId": "9dbc5011ef0e13d7e0f91ac6384cae42",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "ali@mail.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Foydalanuvchi topilmadi"
+                    }
+                }
+            }
+        },
+        "/auth/email/verify/{id}/{hash}": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Emailni tasdiqlash (signed URL, pochta orqali)",
+                "description": "verify() — GET /auth/email/verify/{id}/{hash}",
+                "operationId": "023f6e384749eb305222b788123b1da0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "hash",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Frontend /auth/callback ga token bilan redirect"
+                    },
+                    "403": {
+                        "description": "Noto'g'ri havola"
+                    },
+                    "404": {
+                        "description": "User topilmadi"
+                    }
+                }
             }
         },
         "/profile/favorites": {
@@ -2093,6 +2106,145 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/auth/phone/start": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Telefon uchun OTP yuborish (+998XXXXXXXXX)",
+                "description": "start() — POST /auth/phone/start",
+                "operationId": "2701917379e299ebd216afb35f15934d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phone"
+                                ],
+                                "properties": {
+                                    "phone": {
+                                        "description": "^\\\\+998\\\\d{9}$",
+                                        "type": "string",
+                                        "example": "+998901234567"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP yuborildi"
+                    },
+                    "422": {
+                        "description": "Noto'g'ri telefon"
+                    }
+                }
+            }
+        },
+        "/auth/phone/verify": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "OTP kodni tekshirish",
+                "description": "verify() — POST /auth/phone/verify",
+                "operationId": "0e9f6ab9b34521b58c8d0ce8f7c10787",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phone",
+                                    "code"
+                                ],
+                                "properties": {
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+998901234567"
+                                    },
+                                    "code": {
+                                        "description": "6 raqam",
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Telefon tasdiqlandi, keyin /auth/register/complete"
+                    },
+                    "422": {
+                        "description": "Kod noto'g'ri"
+                    }
+                }
+            }
+        },
+        "/auth/register/complete": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Telefon tasdiqidan keyin parol bilan ro'yxatni yakunlash + JWT",
+                "description": "complete() — POST /auth/register/complete",
+                "operationId": "12cd6b83425d9f2f80cde6d494c25ac0",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phone",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+998901234567"
+                                    },
+                                    "fname": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "lname": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Token va user"
+                    },
+                    "403": {
+                        "description": "Telefon avval OTP bilan tasdiqlanmagan"
+                    },
+                    "422": {
+                        "description": "Validatsiya"
+                    }
+                }
             }
         },
         "/public/ads": {
@@ -2399,18 +2551,6 @@
                                     },
                                     "email": {
                                         "type": "string",
-                                        "nullable": true
-                                    },
-                                    "telegram": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "region_id": {
-                                        "type": "integer",
-                                        "nullable": true
-                                    },
-                                    "city_id": {
-                                        "type": "integer",
                                         "nullable": true
                                     }
                                 },
@@ -3089,14 +3229,6 @@
                     "role": {
                         "type": "string",
                         "example": "user"
-                    },
-                    "region_id": {
-                        "type": "integer",
-                        "nullable": true
-                    },
-                    "city_id": {
-                        "type": "integer",
-                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -3503,14 +3635,18 @@
                         "type": "string",
                         "example": "user"
                     },
-                    "region_id": {
-                        "type": "integer",
-                        "example": 1,
-                        "nullable": true
+                    "status": {
+                        "description": "pending | active | blocked",
+                        "type": "string",
+                        "example": "active"
                     },
-                    "city_id": {
-                        "type": "integer",
-                        "example": 10,
+                    "registration_type": {
+                        "type": "string",
+                        "enum": [
+                            "phone",
+                            "email"
+                        ],
+                        "example": "phone",
                         "nullable": true
                     }
                 },
@@ -3849,11 +3985,6 @@
                         "type": "string",
                         "example": "+998901234567"
                     },
-                    "telegram": {
-                        "type": "string",
-                        "example": "@ali",
-                        "nullable": true
-                    },
                     "email": {
                         "type": "string",
                         "example": "ali@mail.com",
@@ -3862,16 +3993,6 @@
                     "role": {
                         "type": "string",
                         "example": "user"
-                    },
-                    "region_id": {
-                        "type": "integer",
-                        "example": 1,
-                        "nullable": true
-                    },
-                    "city_id": {
-                        "type": "integer",
-                        "example": 10,
-                        "nullable": true
                     },
                     "avatar_url": {
                         "type": "string",
