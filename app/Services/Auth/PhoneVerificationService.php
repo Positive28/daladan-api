@@ -2,13 +2,17 @@
 
 namespace App\Services\Auth;
 
-use App\Jobs\SendSmsJob;
 use App\Models\PhoneVerification;
 use App\Models\User;
+use App\Services\Sms\EskizSmsService;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class PhoneVerificationService
 {
+    public function __construct(
+        private readonly EskizSmsService $eskiz
+    ) {}
+
     public function start(string $phone): PhoneVerification
     {
         $registered = User::query()
@@ -56,7 +60,42 @@ class PhoneVerificationService
             'resend_available_at' => now()->addMinute(),
         ]);
 
-        SendSmsJob::dispatch($phone, "Tasdiqlash kodi: {$code}. 3 daqiqa ichida amal qiladi.");
+        $otpMessage = "Tasdiqlash kodi: {$code}. 3 daqiqa ichida amal qiladi.";
+        if (config('services.eskiz.otp_use_test_template')) {
+            $override = config('services.eskiz.otp_test_template_body');
+            $smsBody = (is_string($override) && trim($override) !== '')
+                ? trim($override)
+                : (config('services.eskiz.trial_sms_bodies')[config('services.eskiz.otp_trial_variant')]
+                    ?? config('services.eskiz.trial_sms_bodies')['uz']);
+        } else {
+            $smsBody = $otpMessage;
+        }
+
+        if (config('services.eskiz.otp_use_test_template')) {
+            logger()->notice('otp.eskiz_trialing_sms', [
+                'phone' => $phone,
+                'code' => $code,
+            ]);
+        }
+
+        try {
+            $this->eskiz->send($phone, $smsBody);
+        } catch (\Throwable $e) {
+            $record->delete();
+            logger()->warning('otp.sms_dispatch_failed', [
+                'phone' => $phone,
+                'exception' => $e->getMessage(),
+            ]);
+
+            $message = 'SMS yuborilmadi. Keyinroq qayta urinib ko\'ring.';
+            if (config('app.debug')) {
+                $message .= ' ('.$e->getMessage().')';
+            }
+
+            throw new HttpResponseException(
+                response()->errorJson($message, 503)
+            );
+        }
 
         return $record;
     }
