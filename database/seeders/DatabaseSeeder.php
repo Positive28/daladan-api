@@ -17,8 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RegionSeeder::class,
             CitySeeder::class,
-            CategorySeeder::class,
-            SubcategorySeeder::class,
+            // Category / Subcategory — adminka orqali qo'lda; kerak bo'lsa: php artisan db:seed --class=CategorySeeder
             PromotionPlanSeeder::class,
             UserSeeder::class,
         ]);
