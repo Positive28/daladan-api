@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Ad;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use OpenApi\Annotations as OA;
 
 class CategoryController extends Controller
@@ -75,7 +77,18 @@ class CategoryController extends Controller
 
     public function destroy(Category $category): JsonResponse
     {
-        $category->delete();
+        DB::transaction(function () use ($category): void {
+            // ads: category_id va subcategory_id restrictOnDelete — avval e'lonlarni olib tashlash kerak.
+            Ad::query()
+                ->where('category_id', $category->id)
+                ->chunkById(100, function ($ads): void {
+                    foreach ($ads as $ad) {
+                        $ad->delete();
+                    }
+                });
+
+            $category->delete();
+        });
 
         return response()->json(response()->successJson(['message' => 'Category o\'chirildi.']));
     }
