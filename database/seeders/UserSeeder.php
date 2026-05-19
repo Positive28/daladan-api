@@ -10,14 +10,16 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate(
-            ['phone' => '+998882383808'],
+            ['phone' => '+998901234567'],
             [
-            'fname'     => 'Super',
-            'lname'     => 'Admin',
-            'role'      => User::ROLE_ADMIN,
-            'email'     => 'phpartisan.aaaa@gmail.com',
-            // Model cast "hashed" bo'lgani uchun bu yerda plain password beramiz.
-            'password'  => 'admin12345',
+                'fname'             => 'Super',
+                'lname'             => 'Admin',
+                'role'              => User::ROLE_ADMIN,
+                'status'            => User::STATUS_ACTIVE,
+                'registration_type' => User::TYPE_PHONE,
+                'phone_verified_at' => now(),
+                'email'             => 'phpartisan.aaaa@gmail.com',
+                'password'          => 'admin12345',
             ]
         );
     }
