@@ -21,6 +21,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('district', 100)->nullable();
             $table->unsignedBigInteger('price')->nullable();
+            $table->boolean('delivery_available')->default(false);
+            $table->string('delivery_info', 255)->nullable();
 
             // Umumiy detail
             $table->decimal('quantity', 10, 2)->nullable();
