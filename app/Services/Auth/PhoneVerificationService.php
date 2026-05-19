@@ -60,7 +60,7 @@ class PhoneVerificationService
             'resend_available_at' => now()->addMinute(),
         ]);
 
-        $otpMessage = "Tasdiqlash kodi: {$code}. 3 daqiqa ichida amal qiladi.";
+        $otpMessage = "daladan.uz saytiga ro'yxatdan o'tish uchun tasdiqlash kodi: {$code}";
         if (config('services.eskiz.otp_use_test_template')) {
             $override = config('services.eskiz.otp_test_template_body');
             $smsBody = (is_string($override) && trim($override) !== '')

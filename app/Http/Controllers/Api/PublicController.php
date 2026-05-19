@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Ad;
 use App\Services\AdViewService;
+use App\Services\PublicAdsQueryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Annotations as OA;
@@ -12,7 +13,8 @@ use OpenApi\Annotations as OA;
 class PublicController extends Controller
 {
     public function __construct(
-        private readonly AdViewService $viewService
+        private readonly AdViewService $viewService,
+        private readonly PublicAdsQueryService $publicAdsQuery,
     ) {}
 
     public function ads(Request $request): JsonResponse
@@ -20,25 +22,13 @@ class PublicController extends Controller
         $validated = $request->validate([
             'category_id'    => 'sometimes|nullable|integer|exists:categories,id',
             'subcategory_id' => 'sometimes|nullable|integer|exists:subcategories,id',
+            'search'         => 'sometimes|nullable|string|max:200',
+            'location'       => 'sometimes|nullable|string|max:200',
         ]);
-
-        $query = Ad::query()
-            ->where('status', Ad::STATUS_ACTIVE)
-            ->with(['category', 'subcategory', 'seller']);
-
-        if (!empty($validated['category_id'] ?? null)) {
-            $query->where('category_id', $validated['category_id']);
-        }
-        if (!empty($validated['subcategory_id'] ?? null)) {
-            $query->where('subcategory_id', $validated['subcategory_id']);
-        }
 
         $perPage = min(max((int) $request->input('per_page', 15), 1), 50);
         // Avval jonli boost, keyin top (ads ustunlari bo'yicha), keyin yangi e'lonlar.
-        $ads = $query
-            ->orderByLiveHighlight()
-            ->orderByDesc('created_at')
-            ->paginate($perPage);
+        $ads = $this->publicAdsQuery->paginate($validated, $perPage);
 
         return response()->successJson($ads);
     }
@@ -70,10 +60,12 @@ class PublicController extends Controller
      *     path="/public/ads",
      *     tags={"Public"},
      *     summary="Barcha faol e'lonlar (ixtiyoriy filter)",
-     *     description="category_id/subcategory_id yuborilmasa — barcha faol e'lonlar; yuborilsa — shu bo'yicha filter.",
+     *     description="category_id/subcategory_id yuborilmasa — barcha faol e'lonlar; yuborilsa — shu bo'yicha filter. search / location — harf-registerni e'tiborsiz qidiruv (PostgreSQL: ILIKE; boshqa DB: LOWER).",
      *     @OA\Parameter(name="per_page",       in="query", required=false, description="1–50, default 15", @OA\Schema(type="integer", example=15)),
      *     @OA\Parameter(name="category_id",    in="query", required=false, description="Berilmasa barcha kategoriyalar", @OA\Schema(type="integer")),
      *     @OA\Parameter(name="subcategory_id", in="query", required=false, description="Berilmasa filter yo'q", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="search",         in="query", required=false, description="Sayt bo'yicha kalit so'z qidiruvi", @OA\Schema(type="string", example="uzum")),
+     *     @OA\Parameter(name="location",       in="query", required=false, description="Joylashuv matni (tuman / viloyat / shahar)", @OA\Schema(type="string", example="Samarqand")),
      *     @OA\Response(
      *         response=200,
      *         description="Paginatsiyali e'lonlar",
