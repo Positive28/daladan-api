@@ -27,6 +27,7 @@ class Ad extends Model implements HasMedia
         'region_id',
         'city_id',
         'title',
+        'contact_name',
         'description',
         'district',
         'price',

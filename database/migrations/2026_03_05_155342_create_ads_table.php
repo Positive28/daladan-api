@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('city_id')->nullable()->constrained('cities')->nullOnDelete();
 
             $table->string('title', 150);
+            $table->string('contact_name', 100)->nullable();
             $table->text('description')->nullable();
             $table->string('district', 100)->nullable();
             $table->unsignedBigInteger('price')->nullable();
