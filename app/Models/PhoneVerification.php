@@ -6,8 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class PhoneVerification extends Model
 {
+    const PURPOSE_REGISTER = 'register';
+    const PURPOSE_RESET    = 'reset';
+
     protected $fillable = [
         'phone',
+        'otp_purpose',
         'code_hash',
         'expires_at',
         'attempts',

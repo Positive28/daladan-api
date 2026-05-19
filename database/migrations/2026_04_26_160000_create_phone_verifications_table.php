@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('phone_verifications', function (Blueprint $table) {
             $table->id();
             $table->string('phone', 20)->index();
+            $table->string('otp_purpose', 20)->default('register');
             $table->string('code_hash');
             $table->timestamp('expires_at');
             $table->unsignedTinyInteger('attempts')->default(0);

@@ -26,9 +26,11 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function ($router) {
     Route::post('/refresh',  [AuthController::class, 'refresh']);
 
     Route::prefix('auth')->group(function () {
-        Route::post('/phone/start',       [PhoneAuthController::class, 'start'])->middleware('throttle:otp-start');
-        Route::post('/phone/verify',      [PhoneAuthController::class, 'verify'])->middleware('throttle:otp-verify');
-        Route::post('/register/complete', [PhoneAuthController::class, 'complete']);
+        Route::post('/phone/start',          [PhoneAuthController::class, 'start'])->middleware('throttle:otp-start');
+        Route::post('/phone/verify',         [PhoneAuthController::class, 'verify'])->middleware('throttle:otp-verify');
+        Route::post('/register/complete',    [PhoneAuthController::class, 'complete']);
+        Route::post('/phone/forgot',         [PhoneAuthController::class, 'forgot'])->middleware('throttle:otp-start');
+        Route::post('/phone/reset-password', [PhoneAuthController::class, 'resetPassword'])->middleware('throttle:otp-verify');
 
         Route::post('/email/register',          [EmailAuthController::class, 'register']);
         Route::post('/email/resend',            [EmailAuthController::class, 'resend']);

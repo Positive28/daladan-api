@@ -53,6 +53,49 @@ class PhoneAuthController extends Controller
         ]);
     }
 
+    public function forgot(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'phone' => ['required', 'string', 'regex:/^\+998\d{9}$/'],
+        ], [
+            'phone.regex' => 'Phone number must be a valid Uzbek number (+998XXXXXXXXX).',
+        ]);
+
+        $this->verificationService->forgot($validated['phone']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset OTP sent successfully.',
+            'data'    => ['phone' => $validated['phone']],
+        ]);
+    }
+
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'phone'                 => ['required', 'string', 'regex:/^\+998\d{9}$/'],
+            'code'                  => ['required', 'digits:6'],
+            'password'              => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(6)],
+        ]);
+
+        $verified = $this->verificationService->verify(
+            $validated['phone'],
+            $validated['code'],
+            \App\Models\PhoneVerification::PURPOSE_RESET
+        );
+
+        if (! $verified) {
+            return response()->errorJson('Invalid OTP code. Please try again.', 422);
+        }
+
+        $this->verificationService->resetPassword($validated['phone'], $validated['password']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset successfully. Please login.',
+        ]);
+    }
+
     public function complete(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -191,4 +234,62 @@ class PhoneAuthController extends Controller
      * )
      */
     private function _swaggerPhoneComplete(): void {}
+
+    /**
+     * forgot() — POST /auth/phone/forgot
+     * @OA\Post(
+     *     path="/auth/phone/forgot",
+     *     tags={"Auth"},
+     *     summary="Parolni tiklash uchun OTP yuborish",
+     *     description="Ro'yxatdan o'tgan telefon raqamiga parolni tiklash uchun 6 xonali OTP yuboradi.",
+     *     @OA\RequestBody(required=true,
+     *         @OA\JsonContent(
+     *             required={"phone"},
+     *             @OA\Property(property="phone", type="string", example="+998901234567", description="+998XXXXXXXXX")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="OTP yuborildi",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Password reset OTP sent successfully."),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="phone", type="string", example="+998901234567")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Bu raqam bilan akkaunt topilmadi"),
+     *     @OA\Response(response=429, description="Ko'p urinish — kutish kerak"),
+     *     @OA\Response(response=503, description="SMS yuborilmadi")
+     * )
+     */
+    private function _swaggerPhoneForgot(): void {}
+
+    /**
+     * resetPassword() — POST /auth/phone/reset-password
+     * @OA\Post(
+     *     path="/auth/phone/reset-password",
+     *     tags={"Auth"},
+     *     summary="OTP bilan parolni tiklash",
+     *     description="SMS dan kelgan OTP kodni tekshirib yangi parol o'rnatadi.",
+     *     @OA\RequestBody(required=true,
+     *         @OA\JsonContent(
+     *             required={"phone","code","password","password_confirmation"},
+     *             @OA\Property(property="phone", type="string", example="+998901234567"),
+     *             @OA\Property(property="code", type="string", example="847291", description="SMS dan kelgan 6 xonali kod"),
+     *             @OA\Property(property="password", type="string", format="password", example="newpassword123"),
+     *             @OA\Property(property="password_confirmation", type="string", format="password", example="newpassword123")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Parol yangilandi",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Password reset successfully. Please login.")
+     *         )
+     *     ),
+     *     @OA\Response(response=422, description="Kod noto'g'ri yoki muddati o'tgan"),
+     *     @OA\Response(response=403, description="Telefon OTP bilan tasdiqlanmagan"),
+     *     @OA\Response(response=429, description="Ko'p noto'g'ri urinish")
+     * )
+     */
+    private function _swaggerPhoneResetPassword(): void {}
 }
