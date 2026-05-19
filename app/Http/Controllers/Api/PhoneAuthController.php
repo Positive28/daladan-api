@@ -104,15 +104,26 @@ class PhoneAuthController extends Controller
      * @OA\Post(
      *     path="/auth/phone/start",
      *     tags={"Auth"},
-     *     summary="Telefon uchun OTP yuborish (+998XXXXXXXXX)",
+     *     summary="Telefon uchun OTP SMS yuborish",
+     *     description="Berilgan O'zbekiston telefon raqamiga 6 xonali OTP kodni SMS orqali yuboradi. Kod 3 daqiqa amal qiladi.",
      *     @OA\RequestBody(required=true,
      *         @OA\JsonContent(
      *             required={"phone"},
-     *             @OA\Property(property="phone", type="string", example="+998901234567", description="^\\+998\\d{9}$")
+     *             @OA\Property(property="phone", type="string", example="+998901234567", description="O'zbekiston raqami: +998XXXXXXXXX")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="OTP yuborildi"),
-     *     @OA\Response(response=422, description="Noto'g'ri telefon")
+     *     @OA\Response(response=200, description="OTP yuborildi",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="OTP sent successfully."),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="phone", type="string", example="+998901234567")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=422, description="Validatsiya xatosi (noto'g'ri raqam yoki allaqachon ro'yxatdan o'tgan)"),
+     *     @OA\Response(response=429, description="Ko'p urinish — kutish kerak"),
+     *     @OA\Response(response=503, description="SMS yuborilmadi (Eskiz xatosi)")
      * )
      */
     private function _swaggerPhoneStart(): void {}
@@ -122,16 +133,26 @@ class PhoneAuthController extends Controller
      * @OA\Post(
      *     path="/auth/phone/verify",
      *     tags={"Auth"},
-     *     summary="OTP kodni tekshirish",
+     *     summary="OTP kodni tasdiqlash",
+     *     description="SMS dan kelgan 6 xonali kodni tekshiradi. Muvaffaqiyatli bo'lsa /auth/register/complete ga o'tiladi.",
      *     @OA\RequestBody(required=true,
      *         @OA\JsonContent(
      *             required={"phone","code"},
      *             @OA\Property(property="phone", type="string", example="+998901234567"),
-     *             @OA\Property(property="code", type="string", example="123456", description="6 raqam")
+     *             @OA\Property(property="code", type="string", example="847291", description="SMS dan kelgan 6 xonali kod")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Telefon tasdiqlandi, keyin /auth/register/complete"),
-     *     @OA\Response(response=422, description="Kod noto'g'ri")
+     *     @OA\Response(response=200, description="Telefon tasdiqlandi",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Phone verified. Proceed to complete registration."),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="phone", type="string", example="+998901234567")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=422, description="Kod noto'g'ri yoki muddati o'tgan"),
+     *     @OA\Response(response=429, description="Ko'p noto'g'ri urinish")
      * )
      */
     private function _swaggerPhoneVerify(): void {}
@@ -141,20 +162,32 @@ class PhoneAuthController extends Controller
      * @OA\Post(
      *     path="/auth/register/complete",
      *     tags={"Auth"},
-     *     summary="Telefon tasdiqidan keyin parol bilan ro'yxatni yakunlash + JWT",
+     *     summary="Ro'yxatdan o'tishni yakunlash va JWT olish",
+     *     description="Telefon OTP bilan tasdiqlanganidan so'ng parol o'rnatib ro'yxatdan o'tishni yakunlaydi. JWT token qaytaradi.",
      *     @OA\RequestBody(required=true,
      *         @OA\JsonContent(
      *             required={"phone","password","password_confirmation"},
      *             @OA\Property(property="phone", type="string", example="+998901234567"),
-     *             @OA\Property(property="fname", type="string", nullable=true),
-     *             @OA\Property(property="lname", type="string", nullable=true),
-     *             @OA\Property(property="password", type="string", format="password"),
-     *             @OA\Property(property="password_confirmation", type="string", format="password")
+     *             @OA\Property(property="fname", type="string", nullable=true, example="Ism"),
+     *             @OA\Property(property="lname", type="string", nullable=true, example="Familiya"),
+     *             @OA\Property(property="password", type="string", format="password", example="secret123"),
+     *             @OA\Property(property="password_confirmation", type="string", format="password", example="secret123")
      *         )
      *     ),
-     *     @OA\Response(response=201, description="Token va user"),
-     *     @OA\Response(response=403, description="Telefon avval OTP bilan tasdiqlanmagan"),
-     *     @OA\Response(response=422, description="Validatsiya")
+     *     @OA\Response(response=201, description="Ro'yxatdan o'tildi, JWT token",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Registration successful."),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="access_token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."),
+     *                 @OA\Property(property="token_type", type="string", example="bearer"),
+     *                 @OA\Property(property="expires_in", type="integer", example=3600),
+     *                 @OA\Property(property="user", type="object")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="Telefon OTP bilan tasdiqlanmagan"),
+     *     @OA\Response(response=422, description="Validatsiya xatosi yoki telefon band")
      * )
      */
     private function _swaggerPhoneComplete(): void {}

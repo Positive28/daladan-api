@@ -2113,8 +2113,8 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Telefon uchun OTP yuborish (+998XXXXXXXXX)",
-                "description": "start() — POST /auth/phone/start",
+                "summary": "Telefon uchun OTP SMS yuborish",
+                "description": "Berilgan O'zbekiston telefon raqamiga 6 xonali OTP kodni SMS orqali yuboradi. Kod 3 daqiqa amal qiladi.",
                 "operationId": "2701917379e299ebd216afb35f15934d",
                 "requestBody": {
                     "required": true,
@@ -2126,7 +2126,7 @@
                                 ],
                                 "properties": {
                                     "phone": {
-                                        "description": "^\\\\+998\\\\d{9}$",
+                                        "description": "O'zbekiston raqami: +998XXXXXXXXX",
                                         "type": "string",
                                         "example": "+998901234567"
                                     }
@@ -2138,10 +2138,42 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "OTP yuborildi"
+                        "description": "OTP yuborildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "OTP sent successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "phone": {
+                                                    "type": "string",
+                                                    "example": "+998901234567"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Noto'g'ri telefon"
+                        "description": "Validatsiya xatosi (noto'g'ri raqam yoki allaqachon ro'yxatdan o'tgan)"
+                    },
+                    "429": {
+                        "description": "Ko'p urinish — kutish kerak"
+                    },
+                    "503": {
+                        "description": "SMS yuborilmadi (Eskiz xatosi)"
                     }
                 }
             }
@@ -2151,8 +2183,8 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "OTP kodni tekshirish",
-                "description": "verify() — POST /auth/phone/verify",
+                "summary": "OTP kodni tasdiqlash",
+                "description": "SMS dan kelgan 6 xonali kodni tekshiradi. Muvaffaqiyatli bo'lsa /auth/register/complete ga o'tiladi.",
                 "operationId": "0e9f6ab9b34521b58c8d0ce8f7c10787",
                 "requestBody": {
                     "required": true,
@@ -2169,9 +2201,9 @@
                                         "example": "+998901234567"
                                     },
                                     "code": {
-                                        "description": "6 raqam",
+                                        "description": "SMS dan kelgan 6 xonali kod",
                                         "type": "string",
-                                        "example": "123456"
+                                        "example": "847291"
                                     }
                                 },
                                 "type": "object"
@@ -2181,10 +2213,39 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Telefon tasdiqlandi, keyin /auth/register/complete"
+                        "description": "Telefon tasdiqlandi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Phone verified. Proceed to complete registration."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "phone": {
+                                                    "type": "string",
+                                                    "example": "+998901234567"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Kod noto'g'ri"
+                        "description": "Kod noto'g'ri yoki muddati o'tgan"
+                    },
+                    "429": {
+                        "description": "Ko'p noto'g'ri urinish"
                     }
                 }
             }
@@ -2194,8 +2255,8 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Telefon tasdiqidan keyin parol bilan ro'yxatni yakunlash + JWT",
-                "description": "complete() — POST /auth/register/complete",
+                "summary": "Ro'yxatdan o'tishni yakunlash va JWT olish",
+                "description": "Telefon OTP bilan tasdiqlanganidan so'ng parol o'rnatib ro'yxatdan o'tishni yakunlaydi. JWT token qaytaradi.",
                 "operationId": "12cd6b83425d9f2f80cde6d494c25ac0",
                 "requestBody": {
                     "required": true,
@@ -2214,19 +2275,23 @@
                                     },
                                     "fname": {
                                         "type": "string",
+                                        "example": "Ism",
                                         "nullable": true
                                     },
                                     "lname": {
                                         "type": "string",
+                                        "example": "Familiya",
                                         "nullable": true
                                     },
                                     "password": {
                                         "type": "string",
-                                        "format": "password"
+                                        "format": "password",
+                                        "example": "secret123"
                                     },
                                     "password_confirmation": {
                                         "type": "string",
-                                        "format": "password"
+                                        "format": "password",
+                                        "example": "secret123"
                                     }
                                 },
                                 "type": "object"
@@ -2236,13 +2301,50 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Token va user"
+                        "description": "Ro'yxatdan o'tildi, JWT token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registration successful."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "access_token": {
+                                                    "type": "string",
+                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "bearer"
+                                                },
+                                                "expires_in": {
+                                                    "type": "integer",
+                                                    "example": 3600
+                                                },
+                                                "user": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "403": {
-                        "description": "Telefon avval OTP bilan tasdiqlanmagan"
+                        "description": "Telefon OTP bilan tasdiqlanmagan"
                     },
                     "422": {
-                        "description": "Validatsiya"
+                        "description": "Validatsiya xatosi yoki telefon band"
                     }
                 }
             }
@@ -2253,7 +2355,7 @@
                     "Public"
                 ],
                 "summary": "Barcha faol e'lonlar (ixtiyoriy filter)",
-                "description": "category_id/subcategory_id yuborilmasa — barcha faol e'lonlar; yuborilsa — shu bo'yicha filter.",
+                "description": "category_id/subcategory_id yuborilmasa — barcha faol e'lonlar; yuborilsa — shu bo'yicha filter. search / location — harf-registerni e'tiborsiz qidiruv (PostgreSQL: ILIKE; boshqa DB: LOWER).",
                 "operationId": "728b62ca4aa4bee130a611e83c0407cd",
                 "parameters": [
                     {
@@ -2282,6 +2384,26 @@
                         "required": false,
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Sayt bo'yicha kalit so'z qidiruvi",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "uzum"
+                        }
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "description": "Joylashuv matni (tuman / viloyat / shahar)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Samarqand"
                         }
                     }
                 ],
