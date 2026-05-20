@@ -53,6 +53,7 @@ class SubCategoryController extends Controller
             'slug'        => 'required|string|max:80|unique:subcategories,slug',
             'sort_order'  => 'nullable|integer',
             'is_active'   => 'required|boolean',
+            'icon'        => 'nullable|file|mimes:svg|max:512',
         ]);
 
         $this->assertValidParent(
@@ -60,7 +61,11 @@ class SubCategoryController extends Controller
             parentId: isset($validated['parent_id']) ? (int) $validated['parent_id'] : null,
         );
 
+        unset($validated['icon']);
         $subcategory = Subcategory::create($validated);
+        if ($request->hasFile('icon')) {
+            $subcategory->addMediaFromRequest('icon')->toMediaCollection('icon');
+        }
         $subcategory->load(['category:id,name,slug', 'parent:id,name,slug']);
         $subcategory->loadCount('children');
 
@@ -84,6 +89,7 @@ class SubCategoryController extends Controller
             'slug'        => 'sometimes|required|string|max:80|unique:subcategories,slug,' . $subcategory->id,
             'sort_order'  => 'nullable|integer',
             'is_active'   => 'sometimes|required|boolean',
+            'icon'        => 'nullable|file|mimes:svg|max:512',
         ]);
 
         $categoryId = (int) ($validated['category_id'] ?? $subcategory->category_id);
@@ -97,7 +103,11 @@ class SubCategoryController extends Controller
             current: $subcategory,
         );
 
+        unset($validated['icon']);
         $subcategory->update($validated);
+        if ($request->hasFile('icon')) {
+            $subcategory->addMediaFromRequest('icon')->toMediaCollection('icon');
+        }
         $subcategory->load(['category:id,name,slug', 'parent:id,name,slug']);
         $subcategory->loadCount('children');
 
@@ -207,7 +217,10 @@ class SubCategoryController extends Controller
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/AdminSubcategoryPayload")
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(ref="#/components/schemas/AdminSubcategoryPayload")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=201,
@@ -262,7 +275,10 @@ class SubCategoryController extends Controller
      *     ),
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/AdminSubcategoryPayload")
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(ref="#/components/schemas/AdminSubcategoryPayload")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -326,6 +342,7 @@ class SubCategoryController extends Controller
      *     @OA\Property(property="slug", type="string", example="echkilar"),
      *     @OA\Property(property="sort_order", type="integer", nullable=true, example=1),
      *     @OA\Property(property="is_active", type="boolean", example=true),
+     *     @OA\Property(property="icon_url", type="string", nullable=true, example="http://localhost/storage/2/subcategory-icon.svg"),
      *     @OA\Property(property="children_count", type="integer", example=3),
      *     @OA\Property(property="created_at", type="string", format="date-time", example="2026-03-18T10:00:00Z"),
      *     @OA\Property(property="updated_at", type="string", format="date-time", example="2026-03-18T10:00:00Z"),
@@ -354,7 +371,8 @@ class SubCategoryController extends Controller
      *     @OA\Property(property="name", type="string", maxLength=80, example="Echkilar"),
      *     @OA\Property(property="slug", type="string", maxLength=80, example="echkilar"),
      *     @OA\Property(property="sort_order", type="integer", nullable=true, example=1),
-     *     @OA\Property(property="is_active", type="boolean", example=true)
+     *     @OA\Property(property="is_active", type="boolean", example=true),
+     *     @OA\Property(property="icon", type="string", format="binary", nullable=true, description="SVG icon fayl")
      * )
      * @OA\Schema(
      *     schema="AdminSubcategoryResponse",

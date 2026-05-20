@@ -39,7 +39,8 @@ class ResourceController extends Controller
     {
         $categories = Category::where('is_active', true)
             ->orderBy('sort_order')
-            ->get(['id', 'name', 'slug']);
+            ->get(['id', 'name', 'slug'])
+            ->each(fn ($category) => $category->append('icon_url'));
 
         return response()->json($categories);
     }
@@ -67,6 +68,7 @@ class ResourceController extends Controller
             'parent_id' => $item->parent_id,
             'name' => $item->name,
             'slug' => $item->slug,
+            'icon_url' => $item->icon_url,
             'has_children' => $item->children_count > 0,
         ]);
 
@@ -222,7 +224,8 @@ class ResourceController extends Controller
      *     type="object",
      *     @OA\Property(property="id", type="integer", example=4),
      *     @OA\Property(property="name", type="string", example="Chorva hayvonlari"),
-     *     @OA\Property(property="slug", type="string", example="chorva-hayvonlari")
+     *     @OA\Property(property="slug", type="string", example="chorva-hayvonlari"),
+     *     @OA\Property(property="icon_url", type="string", nullable=true, example="http://localhost/storage/1/category-icon.svg")
      * )
      * @OA\Schema(
      *     schema="ResourceSubcategory",
@@ -232,6 +235,7 @@ class ResourceController extends Controller
      *     @OA\Property(property="parent_id", type="integer", nullable=true, example=5),
      *     @OA\Property(property="name", type="string", example="Echkilar"),
      *     @OA\Property(property="slug", type="string", example="echkilar"),
+     *     @OA\Property(property="icon_url", type="string", nullable=true, example="http://localhost/storage/2/subcategory-icon.svg"),
      *     @OA\Property(property="has_children", type="boolean", example=false)
      * )
      * @OA\Schema(

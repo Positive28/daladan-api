@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasIconMedia;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Category extends Model implements HasMedia
 {
-    use InteractsWithMedia;
+    use HasIconMedia, InteractsWithMedia;
 
     protected $fillable = [
         'name',
@@ -39,17 +40,5 @@ class Category extends Model implements HasMedia
         return $this->hasMany(Ad::class);
     }
 
-    public function registerMediaCollections(): void
-    {
-        $this->addMediaCollection('image')->singleFile();
-    }
-
-    public function getImageUrlAttribute(): ?string
-    {
-        $media = $this->getFirstMedia('image');
-
-        return $media ? url($media->getUrl()) : null;
-    }
-
-    protected $appends = ['image_url'];
+    protected $appends = ['icon_url'];
 }
