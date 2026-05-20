@@ -9,7 +9,9 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Category extends Model implements HasMedia
 {
-    use HasIconMedia, InteractsWithMedia;
+    use HasIconMedia, InteractsWithMedia {
+        HasIconMedia::registerMediaCollections insteadof InteractsWithMedia;
+    }
 
     protected $fillable = [
         'name',

@@ -681,7 +681,7 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "$ref": "#/components/schemas/AdminSubcategoryPayload"
                             }
@@ -779,7 +779,7 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "$ref": "#/components/schemas/AdminSubcategoryPayload"
                             }
@@ -3275,9 +3275,9 @@
                         "type": "boolean",
                         "example": true
                     },
-                    "image_url": {
+                    "icon_url": {
                         "type": "string",
-                        "example": "http://localhost/storage/1/category-image.jpg",
+                        "example": "http://localhost/storage/1/category-icon.svg",
                         "nullable": true
                     },
                     "created_at": {
@@ -3319,7 +3319,8 @@
                         "type": "boolean",
                         "example": true
                     },
-                    "image": {
+                    "icon": {
+                        "description": "SVG icon fayl",
                         "type": "string",
                         "format": "binary",
                         "nullable": true
@@ -3348,7 +3349,8 @@
                         "type": "boolean",
                         "example": true
                     },
-                    "image": {
+                    "icon": {
+                        "description": "SVG icon fayl",
                         "type": "string",
                         "format": "binary",
                         "nullable": true
@@ -3449,6 +3451,11 @@
                         "type": "boolean",
                         "example": true
                     },
+                    "icon_url": {
+                        "type": "string",
+                        "example": "http://localhost/storage/2/subcategory-icon.svg",
+                        "nullable": true
+                    },
                     "children_count": {
                         "type": "integer",
                         "example": 3
@@ -3536,6 +3543,12 @@
                     "is_active": {
                         "type": "boolean",
                         "example": true
+                    },
+                    "icon": {
+                        "description": "SVG icon fayl",
+                        "type": "string",
+                        "format": "binary",
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -4298,6 +4311,11 @@
                     "slug": {
                         "type": "string",
                         "example": "chorva-hayvonlari"
+                    },
+                    "icon_url": {
+                        "type": "string",
+                        "example": "http://localhost/storage/1/category-icon.svg",
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -4324,6 +4342,11 @@
                     "slug": {
                         "type": "string",
                         "example": "echkilar"
+                    },
+                    "icon_url": {
+                        "type": "string",
+                        "example": "http://localhost/storage/2/subcategory-icon.svg",
+                        "nullable": true
                     },
                     "has_children": {
                         "type": "boolean",

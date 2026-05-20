@@ -12,7 +12,10 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Subcategory extends Model implements HasMedia
 {
-    use HasIconMedia, InteractsWithMedia;
+    use HasIconMedia, InteractsWithMedia {
+        HasIconMedia::registerMediaCollections insteadof InteractsWithMedia;
+    }
+
     protected $fillable = [
         'category_id',
         'parent_id',
