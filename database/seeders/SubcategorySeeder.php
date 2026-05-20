@@ -39,7 +39,14 @@ class SubcategorySeeder extends Seeder
                 ['name' => "Tariq",        'slug' => 'millet'],
             ],
             'animal' => [
-                ['name' => "Qo'ylar",  'slug' => 'sheep'],
+                [
+                    'name' => "Qo'ylar",
+                    'slug' => 'sheep',
+                    'children' => [
+                        ['name' => 'Merinos', 'slug' => 'sheep-merino'],
+                        ['name' => 'Hissori', 'slug' => 'sheep-hissori'],
+                    ],
+                ],
                 ['name' => 'Echkilar', 'slug' => 'goat'],
                 ['name' => 'Qoramol',  'slug' => 'cattle'],
                 ['name' => 'Otlar',    'slug' => 'horse'],
@@ -79,16 +86,31 @@ class SubcategorySeeder extends Seeder
             }
 
             foreach (array_values($items) as $idx => $item) {
-                Subcategory::updateOrCreate(
-                    ['category_id' => $category->id, 'slug' => $item['slug']],
+                $parent = Subcategory::updateOrCreate(
+                    ['slug' => $item['slug']],
                     [
                         'category_id' => $category->id,
+                        'parent_id'   => null,
                         'name'        => $item['name'],
                         'slug'        => $item['slug'],
                         'sort_order'  => $idx + 1,
                         'is_active'   => true,
                     ]
                 );
+
+                foreach ($item['children'] ?? [] as $childIdx => $child) {
+                    Subcategory::updateOrCreate(
+                        ['slug' => $child['slug']],
+                        [
+                            'category_id' => $category->id,
+                            'parent_id'   => $parent->id,
+                            'name'        => $child['name'],
+                            'slug'        => $child['slug'],
+                            'sort_order'  => $childIdx + 1,
+                            'is_active'   => true,
+                        ]
+                    );
+                }
             }
         }
     }

@@ -46,13 +46,31 @@ class ResourceController extends Controller
 
     public function subcategories(Request $request): JsonResponse
     {
-        $query = Subcategory::where('is_active', true)->orderBy('sort_order');
+        $query = Subcategory::query()
+            ->where('is_active', true)
+            ->withCount(['children as children_count' => fn ($q) => $q->where('is_active', true)])
+            ->orderBy('sort_order');
 
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
         }
 
-        return response()->json($query->get(['id', 'category_id', 'name', 'slug']));
+        if ($request->filled('parent_id')) {
+            $query->where('parent_id', $request->parent_id);
+        } elseif ($request->filled('category_id')) {
+            $query->whereNull('parent_id');
+        }
+
+        $items = $query->get(['id', 'category_id', 'parent_id', 'name', 'slug'])->map(fn ($item) => [
+            'id' => $item->id,
+            'category_id' => $item->category_id,
+            'parent_id' => $item->parent_id,
+            'name' => $item->name,
+            'slug' => $item->slug,
+            'has_children' => $item->children_count > 0,
+        ]);
+
+        return response()->json($items);
     }
 
     /**
@@ -138,10 +156,15 @@ class ResourceController extends Controller
      * @OA\Get(
      *     path="/resources/subcategories",
      *     tags={"Resources"},
-     *     summary="Faol subkategoriyalar ro'yxati (ixtiyoriy category_id bo'yicha)",
+     *     summary="Faol subkategoriyalar ro'yxati (nested)",
+     *     description="Kategoriya tanlash oqimi: 1) category_id bilan chaqiring — root subkategoriyalar (parent_id=null). 2) has_children=true bo'lsa parent_id bilan keyingi darajani oling. 3) has_children=false bo'lgan subcategory — e'lon uchun leaf.",
      *     @OA\Parameter(name="category_id", in="query", required=false,
-     *         description="Faqat shu kategoriyaga tegishli subkategoriyalar",
+     *         description="Kategoriya ID. Berilsa va parent_id berilmasa — faqat root subkategoriyalar qaytadi",
      *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(name="parent_id", in="query", required=false,
+     *         description="Ota subcategory ID — ichki (3+ daraja) subkategoriyalar ro'yxati",
+     *         @OA\Schema(type="integer", example=12)
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -206,8 +229,10 @@ class ResourceController extends Controller
      *     type="object",
      *     @OA\Property(property="id", type="integer", example=11),
      *     @OA\Property(property="category_id", type="integer", example=4),
+     *     @OA\Property(property="parent_id", type="integer", nullable=true, example=5),
      *     @OA\Property(property="name", type="string", example="Echkilar"),
-     *     @OA\Property(property="slug", type="string", example="echkilar")
+     *     @OA\Property(property="slug", type="string", example="echkilar"),
+     *     @OA\Property(property="has_children", type="boolean", example=false)
      * )
      * @OA\Schema(
      *     schema="ResourcePromotionPlan",

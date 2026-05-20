@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ad;
+use App\Models\Subcategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
 
 class AdsController extends Controller
@@ -58,6 +60,11 @@ class AdsController extends Controller
         ], [
             'subcategory_id.exists' => 'Subkategoriya tanlangan kategoriyaga tegishli emas.',
         ]);
+
+        $this->assertLeafSubcategory(
+            (int) $validated['subcategory_id'],
+            (int) $validated['category_id']
+        );
 
         $ad = Ad::create([
             ...$validated,
@@ -140,6 +147,13 @@ class AdsController extends Controller
             'subcategory_id.exists' => 'Subkategoriya tanlangan kategoriyaga tegishli emas.',
         ]);
 
+        if (isset($validated['subcategory_id'])) {
+            $this->assertLeafSubcategory(
+                (int) $validated['subcategory_id'],
+                $newCategoryId
+            );
+        }
+
         $adFields = array_diff_key($validated, array_flip(['media', 'delete_media_ids']));
         if ($adFields) {
             $record->update($adFields);
@@ -209,6 +223,28 @@ class AdsController extends Controller
         ]);
     }
 
+    private function assertLeafSubcategory(int $subcategoryId, int $categoryId): void
+    {
+        $subcategory = Subcategory::query()
+            ->where('id', $subcategoryId)
+            ->where('category_id', $categoryId)
+            ->where('is_active', true)
+            ->withCount(['children as children_count' => fn ($q) => $q->where('is_active', true)])
+            ->first();
+
+        if ($subcategory === null) {
+            throw ValidationException::withMessages([
+                'subcategory_id' => 'Subkategoriya topilmadi yoki faol emas.',
+            ]);
+        }
+
+        if ($subcategory->children_count > 0) {
+            throw ValidationException::withMessages([
+                'subcategory_id' => 'E\'lon faqat eng oxirgi subkategoriyada yaratiladi.',
+            ]);
+        }
+    }
+
     // =========================================================================
     // Swagger / OpenAPI annotations
     // =========================================================================
@@ -237,20 +273,25 @@ class AdsController extends Controller
      *     path="/profile/ads",
      *     tags={"Profile","Ads"},
      *     summary="Yangi e'lon yaratish",
+     *     description="subcategory_id faqat eng oxirgi (leaf) subkategoriya bo'lishi kerak — bolalari bo'lmasa. Ichki subkategoriya bo'lmagan holda 2-daraja subcategory ham tanlanishi mumkin.",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(required=true,
      *         @OA\MediaType(mediaType="multipart/form-data",
      *             @OA\Schema(
      *                 required={"category_id","subcategory_id","title"},
-     *                 @OA\Property(property="category_id", type="integer", example=4),
-     *                 @OA\Property(property="subcategory_id", type="integer", example=11),
-     *                 @OA\Property(property="title", type="string", example="Naslli echkilar"),
-     *                 @OA\Property(property="contact_name", type="string", nullable=true, example="Akbar aka"),
+     *                 @OA\Property(property="category_id", type="integer", example=1),
+     *                 @OA\Property(property="subcategory_id", type="integer", example=13, description="Leaf subkategoriya ID (bolasi yo'q)"),
+     *                 @OA\Property(property="region_id", type="integer", nullable=true, example=2),
+     *                 @OA\Property(property="city_id", type="integer", nullable=true, example=25),
+     *                 @OA\Property(property="title", type="string", example="Erkaklar sport oyoq kiyimi"),
+     *                 @OA\Property(property="contact_name", type="string", nullable=true, example="Akbar aka", description="Kim deb murojaat qilinsin"),
      *                 @OA\Property(property="description", type="string", nullable=true),
-     *                 @OA\Property(property="district", type="string", nullable=true),
-     *                 @OA\Property(property="price", type="integer", nullable=true),
-     *                 @OA\Property(property="quantity", type="number", format="float", nullable=true),
-     *                 @OA\Property(property="unit", type="string", nullable=true, example="bosh"),
+     *                 @OA\Property(property="district", type="string", nullable=true, example="Qorovulbozor tumani"),
+     *                 @OA\Property(property="price", type="integer", nullable=true, example=150000),
+     *                 @OA\Property(property="delivery_available", type="boolean", nullable=true, example=true),
+     *                 @OA\Property(property="delivery_info", type="string", nullable=true, example="Mavjud"),
+     *                 @OA\Property(property="quantity", type="number", format="float", nullable=true, example=1),
+     *                 @OA\Property(property="unit", type="string", nullable=true, example="piece"),
      *                 @OA\Property(property="media", type="array", @OA\Items(type="string", format="binary"))
      *             )
      *         )
@@ -260,7 +301,7 @@ class AdsController extends Controller
      *         description="E'lon yaratildi",
      *         @OA\JsonContent(ref="#/components/schemas/ProfileAdSuccessResponse")
      *     ),
-     *     @OA\Response(response=422, description="Validatsiya xatosi"),
+     *     @OA\Response(response=422, description="Validatsiya xatosi yoki subcategory leaf emas"),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
@@ -296,15 +337,20 @@ class AdsController extends Controller
      *     @OA\RequestBody(required=false,
      *         @OA\MediaType(mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 @OA\Property(property="category_id", type="integer", example=4),
-     *                 @OA\Property(property="subcategory_id", type="integer", example=11),
+     *                 @OA\Property(property="category_id", type="integer", example=1),
+     *                 @OA\Property(property="subcategory_id", type="integer", example=13, description="Leaf subkategoriya ID"),
+     *                 @OA\Property(property="region_id", type="integer", nullable=true, example=2),
+     *                 @OA\Property(property="city_id", type="integer", nullable=true, example=25),
      *                 @OA\Property(property="title", type="string"),
+     *                 @OA\Property(property="contact_name", type="string", nullable=true),
      *                 @OA\Property(property="description", type="string", nullable=true),
      *                 @OA\Property(property="district", type="string", nullable=true),
      *                 @OA\Property(property="price", type="integer", nullable=true),
+     *                 @OA\Property(property="delivery_available", type="boolean", nullable=true),
+     *                 @OA\Property(property="delivery_info", type="string", nullable=true),
      *                 @OA\Property(property="quantity", type="number", format="float", nullable=true),
-     *                 @OA\Property(property="unit", type="string", nullable=true, example="bosh"),
-     *                 @OA\Property(property="status", type="string", enum={"active","sold","deleted"}),
+     *                 @OA\Property(property="unit", type="string", nullable=true, example="piece"),
+     *                 @OA\Property(property="status", type="string", enum={"sold","deleted"}),
      *                 @OA\Property(property="delete_media_ids", type="array", @OA\Items(type="integer")),
      *                 @OA\Property(property="media", type="array", @OA\Items(type="string", format="binary"))
      *             )
@@ -403,33 +449,41 @@ class AdsController extends Controller
      * @OA\Schema(
      *     schema="ProfileAdsPayload",
      *     type="object",
-     *     @OA\Property(property="category_id", type="integer", example=4),
-     *     @OA\Property(property="subcategory_id", type="integer", example=11),
-     *     @OA\Property(property="title", type="string", maxLength=150, example="Naslli echkilar"),
+     *     @OA\Property(property="category_id", type="integer", example=1),
+     *     @OA\Property(property="subcategory_id", type="integer", example=13, description="Leaf subkategoriya ID"),
+     *     @OA\Property(property="region_id", type="integer", nullable=true, example=2),
+     *     @OA\Property(property="city_id", type="integer", nullable=true, example=25),
+     *     @OA\Property(property="title", type="string", maxLength=150, example="Erkaklar sport oyoq kiyimi"),
      *     @OA\Property(property="contact_name", type="string", nullable=true, maxLength=100, example="Akbar aka"),
      *     @OA\Property(property="description", type="string", nullable=true),
      *     @OA\Property(property="district", type="string", nullable=true, maxLength=100),
-     *     @OA\Property(property="price", type="integer", nullable=true, example=2100000),
-     *     @OA\Property(property="quantity", type="number", format="float", nullable=true, example=10),
-     *     @OA\Property(property="unit", type="string", nullable=true, example="bosh"),
-     *     @OA\Property(property="status", type="string", enum={"active","sold","deleted"}),
+     *     @OA\Property(property="price", type="integer", nullable=true, example=150000),
+     *     @OA\Property(property="delivery_available", type="boolean", nullable=true, example=true),
+     *     @OA\Property(property="delivery_info", type="string", nullable=true, maxLength=255, example="Mavjud"),
+     *     @OA\Property(property="quantity", type="number", format="float", nullable=true, example=1),
+     *     @OA\Property(property="unit", type="string", nullable=true, example="piece"),
+     *     @OA\Property(property="status", type="string", enum={"sold","deleted"}),
      *     @OA\Property(property="delete_media_ids", type="array", @OA\Items(type="integer"))
      * )
      * @OA\Schema(
      *     schema="ProfileAdResponseItem",
      *     type="object",
      *     @OA\Property(property="id", type="integer", example=101),
-     *     @OA\Property(property="category_id", type="integer", example=4),
-     *     @OA\Property(property="subcategory_id", type="integer", example=11),
+     *     @OA\Property(property="category_id", type="integer", example=1),
+     *     @OA\Property(property="subcategory_id", type="integer", example=13),
+     *     @OA\Property(property="region_id", type="integer", nullable=true, example=2),
+     *     @OA\Property(property="city_id", type="integer", nullable=true, example=25),
      *     @OA\Property(property="seller_id", type="integer", example=1),
-     *     @OA\Property(property="title", type="string", example="Naslli echkilar"),
+     *     @OA\Property(property="title", type="string", example="Erkaklar sport oyoq kiyimi"),
      *     @OA\Property(property="contact_name", type="string", nullable=true, example="Akbar aka"),
      *     @OA\Property(property="description", type="string", nullable=true),
-     *     @OA\Property(property="district", type="string", nullable=true),
-     *     @OA\Property(property="price", type="integer", nullable=true),
-     *     @OA\Property(property="quantity", type="number", format="float", nullable=true),
+     *     @OA\Property(property="district", type="string", nullable=true, example="Qorovulbozor tumani"),
+     *     @OA\Property(property="price", type="integer", nullable=true, example=150000),
+     *     @OA\Property(property="delivery_available", type="boolean", example=true),
+     *     @OA\Property(property="delivery_info", type="string", nullable=true, example="Mavjud"),
+     *     @OA\Property(property="quantity", type="number", format="float", nullable=true, example=1),
      *     @OA\Property(property="unit", type="string", nullable=true, example="piece"),
-     *     @OA\Property(property="status", type="string", example="active"),
+     *     @OA\Property(property="status", type="string", example="pending"),
      *     @OA\Property(property="created_at", type="string", format="date-time"),
      *     @OA\Property(property="updated_at", type="string", format="date-time")
      * )

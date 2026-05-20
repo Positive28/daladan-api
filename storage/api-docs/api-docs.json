@@ -610,6 +610,26 @@
                         }
                     },
                     {
+                        "name": "parent_id",
+                        "in": "query",
+                        "description": "Faqat shu ota subcategory ostidagi bolalar",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    },
+                    {
+                        "name": "roots_only",
+                        "in": "query",
+                        "description": "Faqat root (parent_id=null) subcategorylar",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
+                    },
+                    {
                         "name": "is_active",
                         "in": "query",
                         "description": "Faol/NoFaol filter",
@@ -656,7 +676,7 @@
                     "Admin Subcategories"
                 ],
                 "summary": "Categoryga bog'langan subcategory yaratish",
-                "description": "store() — POST /admin/subcategories",
+                "description": "parent_id berilmasa — 2-daraja (root). parent_id berilsa — ichki subkategoriya (3+ daraja). parent_id shu category_id ga tegishli bo'lishi kerak.",
                 "operationId": "f0a8228310fbf77625923a877269c7ab",
                 "requestBody": {
                     "required": true,
@@ -742,7 +762,7 @@
                     "Admin Subcategories"
                 ],
                 "summary": "Subcategory yangilash",
-                "description": "update() — PUT /admin/subcategories/{subcategory}",
+                "description": "parent_id o'zgartirish mumkin. Tsikl (o'ziga yoki bolasiga bog'lash) taqiqlanadi.",
                 "operationId": "9cff75e4fa041ce3070ccd425fc0ba23",
                 "parameters": [
                     {
@@ -1294,7 +1314,7 @@
                     "Ads"
                 ],
                 "summary": "Yangi e'lon yaratish",
-                "description": "store() — POST /profile/ads",
+                "description": "subcategory_id faqat eng oxirgi (leaf) subkategoriya bo'lishi kerak — bolalari bo'lmasa. Ichki subkategoriya bo'lmagan holda 2-daraja subcategory ham tanlanishi mumkin.",
                 "operationId": "e5d7980dbd0c715513ff692d8cf3ec26",
                 "requestBody": {
                     "required": true,
@@ -1309,15 +1329,32 @@
                                 "properties": {
                                     "category_id": {
                                         "type": "integer",
-                                        "example": 4
+                                        "example": 1
                                     },
                                     "subcategory_id": {
+                                        "description": "Leaf subkategoriya ID (bolasi yo'q)",
                                         "type": "integer",
-                                        "example": 11
+                                        "example": 13
+                                    },
+                                    "region_id": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "nullable": true
+                                    },
+                                    "city_id": {
+                                        "type": "integer",
+                                        "example": 25,
+                                        "nullable": true
                                     },
                                     "title": {
                                         "type": "string",
-                                        "example": "Naslli echkilar"
+                                        "example": "Erkaklar sport oyoq kiyimi"
+                                    },
+                                    "contact_name": {
+                                        "description": "Kim deb murojaat qilinsin",
+                                        "type": "string",
+                                        "example": "Akbar aka",
+                                        "nullable": true
                                     },
                                     "description": {
                                         "type": "string",
@@ -1325,20 +1362,33 @@
                                     },
                                     "district": {
                                         "type": "string",
+                                        "example": "Qorovulbozor tumani",
                                         "nullable": true
                                     },
                                     "price": {
                                         "type": "integer",
+                                        "example": 150000,
+                                        "nullable": true
+                                    },
+                                    "delivery_available": {
+                                        "type": "boolean",
+                                        "example": true,
+                                        "nullable": true
+                                    },
+                                    "delivery_info": {
+                                        "type": "string",
+                                        "example": "Mavjud",
                                         "nullable": true
                                     },
                                     "quantity": {
                                         "type": "number",
                                         "format": "float",
+                                        "example": 1,
                                         "nullable": true
                                     },
                                     "unit": {
                                         "type": "string",
-                                        "example": "bosh",
+                                        "example": "piece",
                                         "nullable": true
                                     },
                                     "media": {
@@ -1366,7 +1416,7 @@
                         }
                     },
                     "422": {
-                        "description": "Validatsiya xatosi"
+                        "description": "Validatsiya xatosi yoki subcategory leaf emas"
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -1496,14 +1546,29 @@
                                 "properties": {
                                     "category_id": {
                                         "type": "integer",
-                                        "example": 4
+                                        "example": 1
                                     },
                                     "subcategory_id": {
+                                        "description": "Leaf subkategoriya ID",
                                         "type": "integer",
-                                        "example": 11
+                                        "example": 13
+                                    },
+                                    "region_id": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "nullable": true
+                                    },
+                                    "city_id": {
+                                        "type": "integer",
+                                        "example": 25,
+                                        "nullable": true
                                     },
                                     "title": {
                                         "type": "string"
+                                    },
+                                    "contact_name": {
+                                        "type": "string",
+                                        "nullable": true
                                     },
                                     "description": {
                                         "type": "string",
@@ -1517,6 +1582,14 @@
                                         "type": "integer",
                                         "nullable": true
                                     },
+                                    "delivery_available": {
+                                        "type": "boolean",
+                                        "nullable": true
+                                    },
+                                    "delivery_info": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
                                     "quantity": {
                                         "type": "number",
                                         "format": "float",
@@ -1524,13 +1597,12 @@
                                     },
                                     "unit": {
                                         "type": "string",
-                                        "example": "bosh",
+                                        "example": "piece",
                                         "nullable": true
                                     },
                                     "status": {
                                         "type": "string",
                                         "enum": [
-                                            "active",
                                             "sold",
                                             "deleted"
                                         ]
@@ -2349,6 +2421,154 @@
                 }
             }
         },
+        "/auth/phone/forgot": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Parolni tiklash uchun OTP yuborish",
+                "description": "Ro'yxatdan o'tgan telefon raqamiga parolni tiklash uchun 6 xonali OTP yuboradi.",
+                "operationId": "2ea2c9904265a951c5d258269acbb2c3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phone"
+                                ],
+                                "properties": {
+                                    "phone": {
+                                        "description": "+998XXXXXXXXX",
+                                        "type": "string",
+                                        "example": "+998901234567"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP yuborildi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password reset OTP sent successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "phone": {
+                                                    "type": "string",
+                                                    "example": "+998901234567"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Bu raqam bilan akkaunt topilmadi"
+                    },
+                    "429": {
+                        "description": "Ko'p urinish — kutish kerak"
+                    },
+                    "503": {
+                        "description": "SMS yuborilmadi"
+                    }
+                }
+            }
+        },
+        "/auth/phone/reset-password": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "OTP bilan parolni tiklash",
+                "description": "SMS dan kelgan OTP kodni tekshirib yangi parol o'rnatadi.",
+                "operationId": "2fdf63c748629995d177ff0c8fa8645b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phone",
+                                    "code",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+998901234567"
+                                    },
+                                    "code": {
+                                        "description": "SMS dan kelgan 6 xonali kod",
+                                        "type": "string",
+                                        "example": "847291"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newpassword123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newpassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Parol yangilandi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password reset successfully. Please login."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Kod noto'g'ri yoki muddati o'tgan"
+                    },
+                    "403": {
+                        "description": "Telefon OTP bilan tasdiqlanmagan"
+                    },
+                    "429": {
+                        "description": "Ko'p noto'g'ri urinish"
+                    }
+                }
+            }
+        },
         "/public/ads": {
             "get": {
                 "tags": [
@@ -2551,18 +2771,28 @@
                 "tags": [
                     "Resources"
                 ],
-                "summary": "Faol subkategoriyalar ro'yxati (ixtiyoriy category_id bo'yicha)",
-                "description": "subcategories() — GET /resources/subcategories",
+                "summary": "Faol subkategoriyalar ro'yxati (nested)",
+                "description": "Kategoriya tanlash oqimi: 1) category_id bilan chaqiring — root subkategoriyalar (parent_id=null). 2) has_children=true bo'lsa parent_id bilan keyingi darajani oling. 3) has_children=false bo'lgan subcategory — e'lon uchun leaf.",
                 "operationId": "d29b942b23445d27362e2eb4911c49dd",
                 "parameters": [
                     {
                         "name": "category_id",
                         "in": "query",
-                        "description": "Faqat shu kategoriyaga tegishli subkategoriyalar",
+                        "description": "Kategoriya ID. Berilsa va parent_id berilmasa — faqat root subkategoriyalar qaytadi",
                         "required": false,
                         "schema": {
                             "type": "integer",
                             "example": 1
+                        }
+                    },
+                    {
+                        "name": "parent_id",
+                        "in": "query",
+                        "description": "Ota subcategory ID — ichki (3+ daraja) subkategoriyalar ro'yxati",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 12
                         }
                     }
                 ],
@@ -3197,6 +3427,11 @@
                         "type": "integer",
                         "example": 4
                     },
+                    "parent_id": {
+                        "type": "integer",
+                        "example": 5,
+                        "nullable": true
+                    },
                     "name": {
                         "type": "string",
                         "example": "Echkilar"
@@ -3213,6 +3448,10 @@
                     "is_active": {
                         "type": "boolean",
                         "example": true
+                    },
+                    "children_count": {
+                        "type": "integer",
+                        "example": 3
                     },
                     "created_at": {
                         "type": "string",
@@ -3240,6 +3479,24 @@
                             }
                         },
                         "type": "object"
+                    },
+                    "parent": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 5
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Qo'y va echkilar"
+                            },
+                            "slug": {
+                                "type": "string",
+                                "example": "qoy-va-echkilar"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -3255,6 +3512,11 @@
                     "category_id": {
                         "type": "integer",
                         "example": 4
+                    },
+                    "parent_id": {
+                        "type": "integer",
+                        "example": 5,
+                        "nullable": true
                     },
                     "name": {
                         "type": "string",
@@ -3530,16 +3792,33 @@
                 "properties": {
                     "category_id": {
                         "type": "integer",
-                        "example": 4
+                        "example": 1
                     },
                     "subcategory_id": {
+                        "description": "Leaf subkategoriya ID",
                         "type": "integer",
-                        "example": 11
+                        "example": 13
+                    },
+                    "region_id": {
+                        "type": "integer",
+                        "example": 2,
+                        "nullable": true
+                    },
+                    "city_id": {
+                        "type": "integer",
+                        "example": 25,
+                        "nullable": true
                     },
                     "title": {
                         "type": "string",
                         "maxLength": 150,
-                        "example": "Naslli echkilar"
+                        "example": "Erkaklar sport oyoq kiyimi"
+                    },
+                    "contact_name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "example": "Akbar aka",
+                        "nullable": true
                     },
                     "description": {
                         "type": "string",
@@ -3552,24 +3831,34 @@
                     },
                     "price": {
                         "type": "integer",
-                        "example": 2100000,
+                        "example": 150000,
+                        "nullable": true
+                    },
+                    "delivery_available": {
+                        "type": "boolean",
+                        "example": true,
+                        "nullable": true
+                    },
+                    "delivery_info": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Mavjud",
                         "nullable": true
                     },
                     "quantity": {
                         "type": "number",
                         "format": "float",
-                        "example": 10,
+                        "example": 1,
                         "nullable": true
                     },
                     "unit": {
                         "type": "string",
-                        "example": "bosh",
+                        "example": "piece",
                         "nullable": true
                     },
                     "status": {
                         "type": "string",
                         "enum": [
-                            "active",
                             "sold",
                             "deleted"
                         ]
@@ -3591,11 +3880,21 @@
                     },
                     "category_id": {
                         "type": "integer",
-                        "example": 4
+                        "example": 1
                     },
                     "subcategory_id": {
                         "type": "integer",
-                        "example": 11
+                        "example": 13
+                    },
+                    "region_id": {
+                        "type": "integer",
+                        "example": 2,
+                        "nullable": true
+                    },
+                    "city_id": {
+                        "type": "integer",
+                        "example": 25,
+                        "nullable": true
                     },
                     "seller_id": {
                         "type": "integer",
@@ -3603,7 +3902,12 @@
                     },
                     "title": {
                         "type": "string",
-                        "example": "Naslli echkilar"
+                        "example": "Erkaklar sport oyoq kiyimi"
+                    },
+                    "contact_name": {
+                        "type": "string",
+                        "example": "Akbar aka",
+                        "nullable": true
                     },
                     "description": {
                         "type": "string",
@@ -3611,15 +3915,27 @@
                     },
                     "district": {
                         "type": "string",
+                        "example": "Qorovulbozor tumani",
                         "nullable": true
                     },
                     "price": {
                         "type": "integer",
+                        "example": 150000,
+                        "nullable": true
+                    },
+                    "delivery_available": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "delivery_info": {
+                        "type": "string",
+                        "example": "Mavjud",
                         "nullable": true
                     },
                     "quantity": {
                         "type": "number",
                         "format": "float",
+                        "example": 1,
                         "nullable": true
                     },
                     "unit": {
@@ -3629,7 +3945,7 @@
                     },
                     "status": {
                         "type": "string",
-                        "example": "active"
+                        "example": "pending"
                     },
                     "created_at": {
                         "type": "string",
@@ -3996,6 +4312,11 @@
                         "type": "integer",
                         "example": 4
                     },
+                    "parent_id": {
+                        "type": "integer",
+                        "example": 5,
+                        "nullable": true
+                    },
                     "name": {
                         "type": "string",
                         "example": "Echkilar"
@@ -4003,6 +4324,10 @@
                     "slug": {
                         "type": "string",
                         "example": "echkilar"
+                    },
+                    "has_children": {
+                        "type": "boolean",
+                        "example": false
                     }
                 },
                 "type": "object"

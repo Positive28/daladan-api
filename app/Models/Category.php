@@ -24,6 +24,11 @@ class Category extends Model implements HasMedia
         ];
     }
 
+    public function rootSubcategories()
+    {
+        return $this->hasMany(Subcategory::class)->whereNull('parent_id');
+    }
+
     public function subcategories()
     {
         return $this->hasMany(Subcategory::class);
