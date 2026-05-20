@@ -2180,6 +2180,114 @@
                 ]
             }
         },
+        "/auth/google/redirect": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Google OAuth URL olish",
+                "description": "Frontend 'Google orqali kirish' tugmasi bosilganda chaqiriladi. Javobdagi data.url ni brauzerda oching (window.location.href). Google login dan keyin backend /auth/google/callback ga qaytadi va foydalanuvchini FRONTEND_URL/auth/callback?token=... ga yo'naltiradi.",
+                "operationId": "2a0cecad0647794c09db2cbe6a8e93f3",
+                "responses": {
+                    "200": {
+                        "description": "Google OAuth URL",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "url": {
+                                                    "type": "string",
+                                                    "example": "https://accounts.google.com/o/oauth2/auth?client_id=...&redirect_uri=..."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Google sozlamalari (.env) noto'g'ri"
+                    }
+                }
+            }
+        },
+        "/auth/google/callback": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Google OAuth callback (Google server chaqiradi)",
+                "description": "Frontend to'g'ridan-to'g'ri chaqirmaydi — Google login dan keyin avtomatik redirect. Muvaffaqiyatli bo'lsa HTTP 302 bilan FRONTEND_URL/auth/callback?token=JWT ga yo'naltiradi. Yangi user bo'lsa bazada yaratiladi (google_id, email, status=active).",
+                "operationId": "b20322a31f2076e0006659ff138a4dd6",
+                "parameters": [
+                    {
+                        "name": "code",
+                        "in": "query",
+                        "description": "Google authorization code",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "state",
+                        "in": "query",
+                        "description": "OAuth state",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Frontend ga redirect",
+                        "headers": {
+                            "Location": {
+                                "description": "FRONTEND_URL/auth/callback?token=...",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "http://localhost:5174/auth/callback?token=eyJ0eXAiOiJKV1QiLCJhbGc..."
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Google autentifikatsiya xatosi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Google autentifikatsiyasida xatolik yuz berdi."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/auth/phone/start": {
             "post": {
                 "tags": [

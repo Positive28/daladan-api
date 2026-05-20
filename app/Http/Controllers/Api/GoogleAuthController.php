@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Facades\Socialite;
+use OpenApi\Annotations as OA;
 use Throwable;
 
 class GoogleAuthController extends Controller
@@ -75,4 +76,51 @@ class GoogleAuthController extends Controller
 
         return redirect(rtrim($frontendUrl, '/') . '/auth/callback?token=' . urlencode((string) $token));
     }
+
+    /**
+     * redirect() — GET /auth/google/redirect
+     * @OA\Get(
+     *     path="/auth/google/redirect",
+     *     tags={"Auth"},
+     *     summary="Google OAuth URL olish",
+     *     description="Frontend 'Google orqali kirish' tugmasi bosilganda chaqiriladi. Javobdagi data.url ni brauzerda oching (window.location.href). Google login dan keyin backend /auth/google/callback ga qaytadi va foydalanuvchini FRONTEND_URL/auth/callback?token=... ga yo'naltiradi.",
+     *     @OA\Response(response=200, description="Google OAuth URL",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="ok"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="url", type="string", example="https://accounts.google.com/o/oauth2/auth?client_id=...&redirect_uri=...")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Google sozlamalari (.env) noto'g'ri")
+     * )
+     */
+    private function _swaggerGoogleRedirect(): void {}
+
+    /**
+     * callback() — GET /auth/google/callback
+     * @OA\Get(
+     *     path="/auth/google/callback",
+     *     tags={"Auth"},
+     *     summary="Google OAuth callback (Google server chaqiradi)",
+     *     description="Frontend to'g'ridan-to'g'ri chaqirmaydi — Google login dan keyin avtomatik redirect. Muvaffaqiyatli bo'lsa HTTP 302 bilan FRONTEND_URL/auth/callback?token=JWT ga yo'naltiradi. Yangi user bo'lsa bazada yaratiladi (google_id, email, status=active).",
+     *     @OA\Parameter(name="code", in="query", required=false, description="Google authorization code",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(name="state", in="query", required=false, description="OAuth state",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(response=302, description="Frontend ga redirect",
+     *         @OA\Header(header="Location", description="FRONTEND_URL/auth/callback?token=...", @OA\Schema(type="string", example="http://localhost:5174/auth/callback?token=eyJ0eXAiOiJKV1QiLCJhbGc..."))
+     *     ),
+     *     @OA\Response(response=422, description="Google autentifikatsiya xatosi",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Google autentifikatsiyasida xatolik yuz berdi.")
+     *         )
+     *     )
+     * )
+     */
+    private function _swaggerGoogleCallback(): void {}
 }
