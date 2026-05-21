@@ -27,7 +27,7 @@ class CategoryController extends Controller
             ->orderByDesc('id')
             ->paginate($request->input('per_page', 15));
 
-        return response()->json(response()->successJson($categories));
+        return response()->successJson($categories);
     }
 
     public function store(Request $request): JsonResponse
@@ -47,12 +47,12 @@ class CategoryController extends Controller
             $category->refresh();
         }
 
-        return response()->json(response()->successJson($category), 201);
+        return response()->successJson($category, 201);
     }
 
     public function show(Category $category): JsonResponse
     {
-        return response()->json(response()->successJson($category));
+        return response()->successJson($category);
     }
 
     public function update(Request $request, Category $category): JsonResponse
@@ -72,7 +72,7 @@ class CategoryController extends Controller
             $category->refresh();
         }
 
-        return response()->json(response()->successJson($category));
+        return response()->successJson($category);
     }
 
     public function destroy(Category $category): JsonResponse
@@ -90,7 +90,7 @@ class CategoryController extends Controller
             $category->delete();
         });
 
-        return response()->json(response()->successJson(['message' => 'Category o\'chirildi.']));
+        return response()->successJson(['message' => 'Category o\'chirildi.']);
     }
 
     /**

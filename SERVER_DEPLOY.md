@@ -14,9 +14,26 @@ DB_USERNAME=postgres
 DB_PASSWORD=...
 ```
 
-Bazani yaratib, keyin:
+### Yangi / toza baza (`migrate:fresh`)
+
+**Diqqat:** barcha jadval va ma'lumot **o'chiladi**.
+
 ```bash
+cd /path/to/start-api
 php artisan migrate:fresh --seed
+php artisan config:clear
+```
+
+Seed dan keyin (ixtiyoriy tekshirish):
+- Admin login: `POST /api/v1/login` — `identifier` + parol `UserSeeder` dagi (`+998901234567` / `admin12345`)
+- Kategoriya/subkategoriya seeder **yo'q** — adminkadan qo'lda qo'shiladi
+- `PromotionPlanSeeder`, `RegionSeeder`, `CitySeeder` ishlaydi
+
+### Mavjud bazani saqlab (`migrate` only)
+
+Productionda odatda:
+```bash
+php artisan migrate --force
 ```
 
 ## 1. Document root

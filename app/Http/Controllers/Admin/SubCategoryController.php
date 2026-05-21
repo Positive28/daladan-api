@@ -41,7 +41,7 @@ class SubCategoryController extends Controller
             ->orderBy('id')
             ->paginate($request->input('per_page', 15));
 
-        return response()->json(response()->successJson($subcategories));
+        return response()->successJson($subcategories);
     }
 
     public function store(Request $request): JsonResponse
@@ -69,7 +69,7 @@ class SubCategoryController extends Controller
         $subcategory->load(['category:id,name,slug', 'parent:id,name,slug']);
         $subcategory->loadCount('children');
 
-        return response()->json(response()->successJson($subcategory), 201);
+        return response()->successJson($subcategory, 201);
     }
 
     public function show(Subcategory $subcategory): JsonResponse
@@ -77,7 +77,7 @@ class SubCategoryController extends Controller
         $subcategory->load(['category:id,name,slug', 'parent:id,name,slug']);
         $subcategory->loadCount('children');
 
-        return response()->json(response()->successJson($subcategory));
+        return response()->successJson($subcategory);
     }
 
     public function update(Request $request, Subcategory $subcategory): JsonResponse
@@ -111,22 +111,22 @@ class SubCategoryController extends Controller
         $subcategory->load(['category:id,name,slug', 'parent:id,name,slug']);
         $subcategory->loadCount('children');
 
-        return response()->json(response()->successJson($subcategory));
+        return response()->successJson($subcategory);
     }
 
     public function destroy(Subcategory $subcategory): JsonResponse
     {
         if ($subcategory->children()->exists()) {
-            return response()->json(response()->errorJson('Avval ichki subkategoriyalarni o\'chiring.', 422));
+            return response()->errorJson('Avval ichki subkategoriyalarni o\'chiring.', 422);
         }
 
         if ($subcategory->ads()->exists()) {
-            return response()->json(response()->errorJson('Bu subkategoriyada e\'lonlar bor.', 422));
+            return response()->errorJson('Bu subkategoriyada e\'lonlar bor.', 422);
         }
 
         $subcategory->delete();
 
-        return response()->json(response()->successJson(['message' => 'Subcategory o\'chirildi.']));
+        return response()->successJson(['message' => 'Subcategory o\'chirildi.']);
     }
 
     private function assertValidParent(int $categoryId, ?int $parentId, ?Subcategory $current = null): void

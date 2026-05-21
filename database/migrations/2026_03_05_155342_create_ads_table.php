@@ -28,7 +28,7 @@ return new class extends Migration
             $table->decimal('quantity', 10, 2)->nullable();
             $table->string('unit', 20)->nullable(); // kg, ton, bag, box, piece
 
-            $table->string('status', 20)->default('active'); // active, sold, deleted
+            $table->string('status', 20)->default('pending'); // pending → admin approve → active
             $table->text('reject_reason')->nullable();
             // Joriy promo holati (ro'yxat tartibi / filter). Batafsil tarix: ad_promotions.
             $table->boolean('is_top_sale')->default(false);
