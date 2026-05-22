@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
-use Spatie\Image\Manipulations;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -178,29 +178,29 @@ class Ad extends Model implements HasMedia
         }
 
         $this->addMediaConversion('thumb')
-            ->fit(Manipulations::FIT_MAX, 240, 240)
-            ->format(Manipulations::FORMAT_WEBP)
+            ->fit(Fit::Max, 240, 240)
+            ->format('webp')
             ->quality(75)
             ->optimize()
             ->performOnCollections('gallery');
 
         $this->addMediaConversion('medium')
-            ->fit(Manipulations::FIT_MAX, 640, 640)
-            ->format(Manipulations::FORMAT_WEBP)
+            ->fit(Fit::Max, 640, 640)
+            ->format('webp')
             ->quality(82)
             ->optimize()
             ->performOnCollections('gallery');
 
         $this->addMediaConversion('large')
-            ->fit(Manipulations::FIT_MAX, 1280, 1280)
-            ->format(Manipulations::FORMAT_WEBP)
+            ->fit(Fit::Max, 1280, 1280)
+            ->format('webp')
             ->quality(86)
             ->optimize()
             ->performOnCollections('gallery');
 
         $this->addMediaConversion('xlarge')
-            ->fit(Manipulations::FIT_MAX, 1920, 1920)
-            ->format(Manipulations::FORMAT_WEBP)
+            ->fit(Fit::Max, 1920, 1920)
+            ->format('webp')
             ->quality(90)
             ->optimize()
             ->performOnCollections('gallery');

@@ -36,13 +36,19 @@ class AdsController extends Controller
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
+        $this->prepareAdFormInput($request);
 
         $validated = $request->validate([
-            'category_id'    => 'required|integer|exists:categories,id',
+            'category_id'    => [
+                'required', 'integer',
+                Rule::exists('categories', 'id')->where('is_active', true),
+            ],
             'subcategory_id' => [
                 'required', 'integer',
                 Rule::exists('subcategories', 'id')
-                    ->where(fn ($q) => $q->where('category_id', $request->input('category_id'))),
+                    ->where(fn ($q) => $q
+                        ->where('category_id', $request->input('category_id'))
+                        ->where('is_active', true)),
             ],
             'region_id'          => 'nullable|integer|exists:regions,id',
             'city_id'            => 'nullable|integer|exists:cities,id',
@@ -58,7 +64,8 @@ class AdsController extends Controller
             'media'              => 'nullable|array',
             'media.*'            => 'file|mimetypes:image/jpeg,image/png,image/webp,video/mp4,video/quicktime|max:51200',
         ], [
-            'subcategory_id.exists' => 'Subkategoriya tanlangan kategoriyaga tegishli emas.',
+            'category_id.exists'    => 'Kategoriya topilmadi yoki faol emas.',
+            'subcategory_id.exists' => 'Subkategoriya tanlangan kategoriyaga tegishli emas yoki faol emas.',
         ]);
 
         $this->assertLeafSubcategory(
@@ -113,12 +120,17 @@ class AdsController extends Controller
             return response()->errorJson('E\'lon topilmadi.', 404);
         }
 
+        $this->prepareAdFormInput($request);
+
         $newCategoryId = $request->filled('category_id')
             ? (int) $request->input('category_id')
             : (int) $record->category_id;
 
         $rules = [
-            'category_id'        => 'sometimes|integer|exists:categories,id',
+            'category_id'        => [
+                'sometimes', 'integer',
+                Rule::exists('categories', 'id')->where('is_active', true),
+            ],
             'subcategory_id'     => ['sometimes', 'integer'],
             'region_id'          => 'nullable|integer|exists:regions,id',
             'city_id'            => 'nullable|integer|exists:cities,id',
@@ -140,12 +152,31 @@ class AdsController extends Controller
 
         if ($request->filled('subcategory_id')) {
             $rules['subcategory_id'][] = Rule::exists('subcategories', 'id')
-                ->where(fn ($q) => $q->where('category_id', $newCategoryId));
+                ->where(fn ($q) => $q
+                    ->where('category_id', $newCategoryId)
+                    ->where('is_active', true));
         }
 
         $validated = $request->validate($rules, [
-            'subcategory_id.exists' => 'Subkategoriya tanlangan kategoriyaga tegishli emas.',
+            'category_id.exists'    => 'Kategoriya topilmadi yoki faol emas.',
+            'subcategory_id.exists' => 'Subkategoriya tanlangan kategoriyaga tegishli emas yoki faol emas.',
         ]);
+
+        if ($request->filled('category_id') && ! $request->filled('subcategory_id')) {
+            $stillValid = Subcategory::query()
+                ->where('id', $record->subcategory_id)
+                ->where('category_id', $newCategoryId)
+                ->where('is_active', true)
+                ->exists();
+
+            if (! $stillValid) {
+                throw ValidationException::withMessages([
+                    'subcategory_id' => 'Kategoriya o\'zgarganda yangi subcategory_id ham yuboring.',
+                ]);
+            }
+
+            $this->assertLeafSubcategory((int) $record->subcategory_id, $newCategoryId);
+        }
 
         if (isset($validated['subcategory_id'])) {
             $this->assertLeafSubcategory(
@@ -240,8 +271,27 @@ class AdsController extends Controller
 
         if ($subcategory->children_count > 0) {
             throw ValidationException::withMessages([
-                'subcategory_id' => 'E\'lon faqat eng oxirgi subkategoriyada yaratiladi.',
+                'subcategory_id' => 'E\'lon faqat eng oxirgi (ichki) subkategoriyada yaratiladi. Avval parent_id bilan bolalar ro\'yxatini oling.',
             ]);
+        }
+    }
+
+    /** Postman / form-data: bo'sh stringlar va boolean maydonlar. */
+    private function prepareAdFormInput(Request $request): void
+    {
+        foreach (['region_id', 'city_id'] as $key) {
+            if ($request->has($key) && $request->input($key) === '') {
+                $request->merge([$key => null]);
+            }
+        }
+
+        if ($request->has('delivery_available')) {
+            $raw = $request->input('delivery_available');
+            if (is_string($raw)) {
+                $request->merge([
+                    'delivery_available' => filter_var($raw, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+                ]);
+            }
         }
     }
 

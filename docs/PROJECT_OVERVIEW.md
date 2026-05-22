@@ -78,7 +78,7 @@ Ayrim **Admin** controllerlar tarixan `response()->json(response()->successJson(
 
 - **User** — `seller_id` emas; e’lon egasi `ads.seller_id` orqali `User`ga bog‘langan.
 - **Ad** — `seller_id`, `status` (`active`, `sold`, `deleted`), `views_count`, Spatie media `gallery`, `media_list` append.
-- **Category / Subcategory** — ierarxiya; e’londa `category_id`, `subcategory_id`.
+- **Category / Subcategory** — ierarxiya (`parent_id`); e’londa `category_id` + **leaf** `subcategory_id` (bolasi yo‘q, faol). Tanlash: `GET /resources/subcategories?category_id=` → keyin `?parent_id=`; `is_leaf: true` bo‘lgan ID. Postman: **[POSTMAN_AD_FLOW.md](POSTMAN_AD_FLOW.md)**.
 - **Region / City** — foydalanuvchi va e’lon kontekstida joylashuv.
 - **AdView** — har bir hisoblangan ko‘rish yozuvi (statistika va tarix).
 - **AdPromotion** va boshqa jadvallar — reklama/promo mantiq (kerak bo‘lsa migratsiyalardan ko‘ring).

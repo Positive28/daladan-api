@@ -4,6 +4,8 @@
 
 API tuzilishi, marshrutlar, JWT, e’lon ko‘rishlari va admin qisqacha: **[docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)** — yangi chat / AI sessiyasida kontekst sifatida berish uchun qulay.
 
+**Postman — e’lon qo‘shish (kategoriya → subkategoriya → ichki subkategoriya):** **[docs/POSTMAN_AD_FLOW.md](docs/POSTMAN_AD_FLOW.md)**
+
 ---
 
 <p align="center">
