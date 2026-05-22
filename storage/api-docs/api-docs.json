@@ -4459,6 +4459,11 @@
                     "has_children": {
                         "type": "boolean",
                         "example": false
+                    },
+                    "is_leaf": {
+                        "description": "true = e'lon yaratish uchun tanlanadi",
+                        "type": "boolean",
+                        "example": true
                     }
                 },
                 "type": "object"

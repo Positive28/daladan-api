@@ -237,7 +237,7 @@ class ResourceController extends Controller
      *     @OA\Property(property="name", type="string", example="Echkilar"),
      *     @OA\Property(property="slug", type="string", example="echkilar"),
      *     @OA\Property(property="icon_url", type="string", nullable=true, example="http://localhost/storage/2/subcategory-icon.svg"),
-     *     @OA\Property(property="has_children", type="boolean", example=false)
+     *     @OA\Property(property="has_children", type="boolean", example=false),
      *     @OA\Property(property="is_leaf", type="boolean", example=true, description="true = e'lon yaratish uchun tanlanadi")
      * )
      * @OA\Schema(
